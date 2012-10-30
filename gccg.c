@@ -5,7 +5,7 @@
 #include "papi.h"
 #include "xread.h"
 #include "xwrite.h"
-
+#define NUM_EVENTS 4
 int main(int argc, char *argv[])
 {
 	if (argc < 4)
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     float real_time, proc_time, mflops;
     long long flops;
     double L1mira,L2mira;
-    long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3,;
+    long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
     //int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
     /* initialization  */
@@ -278,9 +278,9 @@ int main(int argc, char *argv[])
     if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ) 
     printf("fail to stop papi counter");
     else 
-    printf("%lld,%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);
-    mflops = values[2]/(end-usec_2-end_usec_1);
-    printf("%f",mflops);	
+    printf("%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);
+    mflops = values[2]/(end_usec_2-end_usec_1);
+    printf("Mflops:%f\n",mflops);	
 	/* write output file  */
 //	if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
 //		printf("error when trying to write to file %s\n", file_out);
