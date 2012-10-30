@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
     if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
-    {printf("%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);}
+    printf("%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);}
     //Caculate Mflops using total floating caculation and total caculation time
     mflops = values[2]/(end_usec_2-end_usec_1);
     printf("Mflops:%f\n",mflops);	
