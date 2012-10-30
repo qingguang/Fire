@@ -36,13 +36,14 @@ int main(int argc, char *argv[])
     long long values[NUM_EVENTS];
 
     int retval;
- float real_time, proc_time, mflops;
-   long long flops;
-    int Events_1[NUM_EVENTS_1]={PAPI_L1_TCM,PAPI_L1_TCA};
-    int Events_2[NUM_EVENTS_2]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
-  //    int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_L1_DCA,PAPI_FP_INS,PAPI_TOT_CYC}; 
+    float real_time, proc_time, mflops;
+    long long flops;
+ 
+    int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
+    //int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};  
  	/* initialization  */
 	// read-in the input file
+
 	int f_status = read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
 			&bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &nboard);
 

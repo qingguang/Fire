@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "math.h"
 #include <string.h>
-
+#include "papi.h"
 #include "xread.h"
 #include "xwrite.h"
 
@@ -20,11 +20,7 @@ int main(int argc, char *argv[])
     char *str1="SU_tjunc.vtk";
     char *str2="VAR_tjunc.vtk";
     char *str3="CGUP_tjunc.vtk";    
-printf("file_out:%s\n",file_out); 
-printf("str1:%s\n", str1);    
- printf("str2:%s\n",str2);
- printf("str3:%s\n",str3);
-
+    printf("file_type:%s\n",file_type); 
 //strcat(str2,file_out); 
     //strcat(str3,file_out); 
 	int status = 0;
@@ -40,23 +36,41 @@ printf("str1:%s\n", str1);
 
 	/** boundary coefficients for each volume cell */
 	double *bs, *be, *bn, *bw, *bl, *bh, *bp, *su;
+
     int* nodeCnt;// = (int *) calloc(sizeof(int), (nintcf + 1)); 
     int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
     int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
+    int nodeCntbin;
+    int** pointsbin;
+    int* elemsbin;
+    /**Papi parameters*/
+    long long values[NUM_EVENTS];
+    float real_time, proc_time, mflops;
+    long long flops;
+    double L1mira,L2mira;
+    long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3,;
+    int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
+    //int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
+    /* initialization  */
+    start_cycles = PAPI_get_real_cyc(); // Gets the starting time in clock cycles
+    start_usec = PAPI_get_real_usec(); // Gets the starting time in microseconds
+    // read-in the input file
+    int f_status;
+    if (strcmp(file_type,"text")==0)
 
-	/* initialization  */
-	// read-in the input file
-	int f_status;
- if (file_type=="text")
-
-f_status= read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
+             f_status= read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
 			&bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &nboard);
-//if (file_type=="bin") 
+    else if (strcmp(file_type,"bin")==0) 
 
-//f_status = read_unformatted_geo(file_in, &nintci, &nintcf, &nextci,
-        //                &nextcf, &lcc, &bs, &be, &bn, &bw,
-          //              &bl, &bh, &bp, &su, &nodeCnt, &points, &elems);
-
+           f_status = read_unformatted_geo(file_in, &nintci, &nintcf, &nextci,
+                        &nextcf, &lcc, &bs, &be, &bn, &bw,
+                        &bl, &bh, &bp, &su, &nodeCntbin, &pointsbin, &elemsbin);
+    else
+            {printf ("input file format is nor correct");
+             return EXIT_FAILURE;
+    }
+    end_cycles_1 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
+    end_usec_1 = PAPI_get_real_usec(); // Gets the ending time in microseconds
 	if (f_status != 0)
 	{
 		printf("failed to initialize data!\n");
@@ -138,7 +152,8 @@ f_status= read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
 	int nor1 = nor - 1;
 	
     /* finished initalization */
-
+    if ( PAPI_start_counters( Events, NUM_EVENTS ) != PAPI_OK ) 
+    printf("Fail to start PAPI counter\n");
 	/* start computation loop */
 	while (iter < 10000)
 	{
@@ -258,23 +273,34 @@ f_status= read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
 	}/* end phase 2 */
 
 	/* finished computation loop */
-
+    end_cycles_2 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
+    end_usec_2 = PAPI_get_real_usec(); // Gets the ending time in microseconds
+    if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ) 
+    printf("fail to stop papi counter");
+    else 
+    printf("%lld,%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);
+    mflops = values[2]/(end-usec_2-end_usec_1);
+    printf("%f",mflops);	
 	/* write output file  */
 //	if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
 //		printf("error when trying to write to file %s\n", file_out);
     //transfer volume to mesh
-    if (vol2mesh(nintci, nintcf, lcc, &nodeCnt, &points, &elems) != 0 ) 
+if (strcmp(file_type,"text")==0)
+{    
+if (vol2mesh(nintci, nintcf, lcc, &nodeCnt, &points, &elems) != 0 ) 
           printf("error when trying to converge topology to volume");   
-    //write output to vtk file    
+ }   //write output to vtk file    
     if (write_result_vtk(str1, nintci, nintcf, nodeCnt, points, elems, su) != 0)
        printf("error when write SU to vtk file");
     if (write_result_vtk(str2, nintci, nintcf, nodeCnt, points, elems, var) != 0)
        printf("error when write VAR to vtk file");
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0)
        printf("error when write CGUP to vtk file");
-    
-
-	/* Free all the dynamically allocated memory */
+    end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
+    end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
+    printf("Read time:%lld,Computation time:%lld,Write outfile %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2);
+   
+    /* Free all the dynamically allocated memory */
 	free(direc2); free(direc1); free(dxor2); free(dxor1); free(adxor2); free(adxor1);
 	free(cnorm); free(oc); free(var); free(cgup); free(resvec); free(su); free(bp);
 	free(bh); free(bl); free(bw); free(bn); free(be); free(bs);
