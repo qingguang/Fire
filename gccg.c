@@ -42,7 +42,9 @@ int main(int argc, char *argv[]) {
     int** pointsbin;
     int* elemsbin;
     /**Papi parameters*/
-    long long values[NUM_EVENTS];
+    long long values_i[NUM_EVENTS];
+    long long values_c[NUM_EVENTS];
+   long long values_o[NUM_EVENTS]; 
     float real_time, proc_time, mflops;
     long long flops;
     double L1mira,L2mira;
@@ -73,7 +75,7 @@ int main(int argc, char *argv[]) {
              return EXIT_FAILURE;
     }
     // Gets the ending time of reading input file  in microseconds
-    end_usec_1 = PAPI_get_real_usec(); 
+  
     if (f_status != 0){
 		
         printf("failed to initialize data!\n");
@@ -148,8 +150,13 @@ int main(int argc, char *argv[]) {
 	
     /* finished initalization */
     //read PAPI event counters 
-    if ( PAPI_read_counters( Events, NUM_EVENTS ) != PAPI_OK ) 
-    printf("Fail to read PAPI counter\n");
+        if ( PAPI_stop_counters( values_,i NUM_EVENTS ) != PAPI_OK ){ 
+    printf("fail to stop papi counter");
+    }else{ 
+    printf("%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
+    L1mira=(double)values_i[0]/values_i[1];
+    printf("cache miss rate is :%4.4f\n",L1mira);
+    end_usec_1 = PAPI_get_real_usec(); 
     /* start computation loop */
     while (iter < 10000){
 
@@ -251,15 +258,15 @@ int main(int argc, char *argv[]) {
     /* finished computation loop */
     end_cycles_2 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_2 = PAPI_get_real_usec(); // Gets the ending time in microseconds
-        if ( PAPI_read_counters( Events, NUM_EVENTS ) != PAPI_OK ) 
-    printf("Fail to read PAPI counter\n");
-
-if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ){ 
+    if ( PAPI_read_counters( values_c, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
-    printf("%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);}
-    L1mira=(double)values[0]/values[1];
+    printf("%lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
+    L1mira=(double)values_c[0]/values_c[1];
     printf("cache miss rate is :%4.4f\n",L1mira);
+
+
+
     //Caculate Mflops using total floating caculation and total caculation time
     mflops = values[2]/(end_usec_2-end_usec_1);
     printf("Mflops:%f\n",mflops);	
@@ -281,6 +288,13 @@ if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ){
        printf("error when write VAR to vtk file");}
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0){
        printf("error when write CGUP to vtk file");}
+    
+    if ( PAPI_stop_counters( values_o, NUM_EVENTS ) != PAPI_OK ){ 
+    printf("fail to stop papi counter");
+    }else{ 
+    printf("%lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
+    L1mira=(double)values_o[0]/values_o[1];
+    printf("cache miss rate is :%4.4f\n",L1mira);
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
     printf("Read time:%lld,Computation time:%lld,Write outfile %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2);
