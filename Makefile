@@ -5,7 +5,7 @@
 ####################################################################
 
 CC = icc
-CFLAGS = -g -O0
+CFLAGS = -g -O3 -opt-prefetch=4
 LIBS = -lm
 
 # Make sure you have loaded the papi module before uncommenting these and include papi.h in the sources

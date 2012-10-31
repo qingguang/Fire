@@ -114,7 +114,7 @@ int write_result_vtk(char *outFileName, int startIdx, int endIdx, int nodeCnt, i
 
 	fprintf(fp,"POINTS %d float\n",nodeCnt);
 
-	printf("nodeCnt = %d, startInd= %d, endInd = %d, cellCnt=%d\n",nodeCnt, startIdx, endIdx, cellCnt);
+	//printf("nodeCnt = %d, startInd= %d, endInd = %d, cellCnt=%d\n",nodeCnt, startIdx, endIdx, cellCnt);
 	for (i = 1; i<=nodeCnt/2; i++){
 		fprintf(fp,"%d %d %d ",points[0][2*i],points[1][2*i],points[2][2*i]);
 		fprintf(fp,"%d %d %d\n",points[0][2*i+1],points[1][2*i+1],points[2][2*i+1]);

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     /**In cluster mpp_inter L1 and L2 events can not computed at the same time, 
     so set into two groups*/
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
-    //int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
+   // int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
     /* initialization  */
     if ( PAPI_start_counters( Events, NUM_EVENTS ) != PAPI_OK )
     printf("Fail to start PAPI counter\n");    
@@ -153,14 +153,15 @@ int main(int argc, char *argv[]) {
         if ( PAPI_read_counters( values_i, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
-    printf("%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
+    printf("****Input phase*********\n");
+    printf("EVENTS :%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
     L1mira=(double)values_i[0]/values_i[1];
-    printf("cache miss rate is :%4.4f\n",L1mira);
+    printf("cache miss rate: %4.6f\n",L1mira);
    
     end_usec_1 = PAPI_get_real_usec(); 
 
-    mflops_i = values_i[2] / (end_usec_1-start_usec);
-    printf("Mflops in input  phase:%f\n",mflops_i);
+    mflops_i = (float) values_i[2] / (end_usec_1-start_usec);
+    printf("Mflops: %4.4f\n",mflops_i);
 
     /* start computation loop */
     while (iter < 10000){
@@ -265,15 +266,16 @@ int main(int argc, char *argv[]) {
     end_usec_2 = PAPI_get_real_usec(); // Gets the ending time in microseconds
     if ( PAPI_read_counters( values_c, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
-    }else{ 
-    printf("computation phase: %lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
+    }else{
+    printf("****Computation phase*********\n");
+    printf("EVENTS: %lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
 
     L1mira=(double)values_c[0]/values_c[1];
-    printf("cache miss rate in computation phase is :%4.4f\n",L1mira);
+    printf("cache miss rate: %4.6f\n",L1mira);
 
     //Caculate Mflops using total floating caculation and total caculation time
-    mflops_c = ( values_c[2] - values_i[2] ) / ( end_usec_2-end_usec_1 );
-    printf("Mflops in computation phase:%f\n",mflops_c);	
+    mflops_c = (float) ( values_c[2] ) / ( end_usec_2-end_usec_1 );
+    printf("Mflops: %4.6f\n",mflops_c);	
 
     /* write output file  */
     /**
@@ -293,22 +295,22 @@ int main(int argc, char *argv[]) {
        printf("error when write VAR to vtk file");}
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0){
        printf("error when write CGUP to vtk file");}
-    
+     
     if ( PAPI_stop_counters( values_o, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
-    printf("Output phase is: %lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
+    printf("****Output phase*********\n");
+    printf("EVENTS : %lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
     
     L1mira=(double) values_o[0]/values_o[1];
-    printf("cache miss rate in output phase is :%4.4f\n",L1mira);
-
-    mflops_o = (values_o[2]-values_c[2])/(end_usec_3-end_usec_2);
-    printf("Mflops in output phase is: %f\n",mflops_o);
-   
+    printf("cache miss rate :%4.6f\n",L1mira);
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
-    printf("Read time:%lld,Computation time:%lld,Write outfile %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2);
+    
+    mflops_o = (float) (values_o[2])/(end_usec_3-end_usec_2);
+    printf("Mflops: %4.6f\n",mflops_o);
    
+    printf("Input time:%lld,Computation time:%lld, output time: %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2); 
     /* Free all the dynamically allocated memory */
     free(direc2); free(direc1); free(dxor2); free(dxor1); free(adxor2); free(adxor1);
     free(cnorm); free(oc); free(var); free(cgup); free(resvec); free(su); free(bp);
