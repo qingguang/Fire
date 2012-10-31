@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
 	
     /* finished initalization */
     //read PAPI event counters 
-        if ( PAPI_stop_counters( values_,i NUM_EVENTS ) != PAPI_OK ){ 
+        if ( PAPI_read_counters( values_i, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
     printf("%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
