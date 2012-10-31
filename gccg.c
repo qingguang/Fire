@@ -156,7 +156,12 @@ int main(int argc, char *argv[]) {
     printf("%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
     L1mira=(double)values_i[0]/values_i[1];
     printf("cache miss rate is :%4.4f\n",L1mira);
+   
     end_usec_1 = PAPI_get_real_usec(); 
+
+    mflops_i = values_i[2] / (end_usec_1-start_usec);
+    printf("Mflops in input  phase:%f\n",mflops_i);
+
     /* start computation loop */
     while (iter < 10000){
 
@@ -261,15 +266,15 @@ int main(int argc, char *argv[]) {
     if ( PAPI_read_counters( values_c, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
-    printf("%lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
+    printf("computation phase: %lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
+
     L1mira=(double)values_c[0]/values_c[1];
-    printf("cache miss rate is :%4.4f\n",L1mira);
-
-
+    printf("cache miss rate in computation phase is :%4.4f\n",L1mira);
 
     //Caculate Mflops using total floating caculation and total caculation time
-    mflops_c = values[2]/(end_usec_2-end_usec_1);
-    printf("Mflops in computation phase:%f\n",mflops);	
+    mflops_c = ( values_c[2] - values_i[2] ) / ( end_usec_2-end_usec_1 );
+    printf("Mflops in computation phase:%f\n",mflops_c);	
+
     /* write output file  */
     /**
     if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
@@ -292,9 +297,14 @@ int main(int argc, char *argv[]) {
     if ( PAPI_stop_counters( values_o, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
-    printf("%lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
-    L1mira=(double)values_o[0]/values_o[1];
-    printf("cache miss rate is :%4.4f\n",L1mira);
+    printf("Output phase is: %lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
+    
+    L1mira=(double) values_o[0]/values_o[1];
+    printf("cache miss rate in output phase is :%4.4f\n",L1mira);
+
+    mflops_o = (values_o[2]-values_c[2])/(end_usec_3-end_usec_2);
+    printf("Mflops in output phase is: %f\n",mflops_o);
+   
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
     printf("Read time:%lld,Computation time:%lld,Write outfile %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2);
