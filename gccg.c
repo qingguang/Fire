@@ -52,8 +52,11 @@ int main(int argc, char *argv[]) {
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
     //int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
     /* initialization  */
-    start_cycles = PAPI_get_real_cyc(); // Gets the starting time in clock cycles
+    if ( PAPI_start_counters( Events, NUM_EVENTS ) != PAPI_OK )
+    printf("Fail to start PAPI counter\n");    
+start_cycles = PAPI_get_real_cyc(); // Gets the starting time in clock cycles
     start_usec = PAPI_get_real_usec(); // Gets the starting time in microseconds
+    
     // read-in the input file
     int f_status;
     if (strcmp(file_type,"text") == 0) {
@@ -144,9 +147,9 @@ int main(int argc, char *argv[]) {
     int nor1 = nor - 1;
 	
     /* finished initalization */
-    //start PAPI event counters 
-    if ( PAPI_start_counters( Events, NUM_EVENTS ) != PAPI_OK ) 
-    printf("Fail to start PAPI counter\n");
+    //read PAPI event counters 
+    if ( PAPI_read_counters( Events, NUM_EVENTS ) != PAPI_OK ) 
+    printf("Fail to read PAPI counter\n");
     /* start computation loop */
     while (iter < 10000){
 
@@ -248,7 +251,10 @@ int main(int argc, char *argv[]) {
     /* finished computation loop */
     end_cycles_2 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_2 = PAPI_get_real_usec(); // Gets the ending time in microseconds
-    if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ){ 
+        if ( PAPI_read_counters( Events, NUM_EVENTS ) != PAPI_OK ) 
+    printf("Fail to read PAPI counter\n");
+
+if ( PAPI_stop_counters( values, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
     printf("%lld,%lld,%lld,%lld\n" , values[0],values[1],values[2],values[3]);}
