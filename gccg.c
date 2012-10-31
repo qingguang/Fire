@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     long long values_i[NUM_EVENTS];
     long long values_c[NUM_EVENTS];
    long long values_o[NUM_EVENTS]; 
-    float real_time, proc_time, mflops;
+    float real_time, proc_time, mflops_i,mflops_c,mflops_o;
     long long flops;
     double L1mira,L2mira;
     long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
@@ -268,8 +268,8 @@ int main(int argc, char *argv[]) {
 
 
     //Caculate Mflops using total floating caculation and total caculation time
-    mflops = values[2]/(end_usec_2-end_usec_1);
-    printf("Mflops:%f\n",mflops);	
+    mflops_c = values[2]/(end_usec_2-end_usec_1);
+    printf("Mflops in computation phase:%f\n",mflops);	
     /* write output file  */
     /**
     if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
