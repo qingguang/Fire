@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
     long long flops;
     double L1mira,L2mira;
     long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
+    long long end_read_usec;
     /**In cluster mpp_inter L1 and L2 events can not computed at the same time, 
     so set into two groups*/
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
@@ -72,7 +73,8 @@ int main(int argc, char *argv[]) {
              return EXIT_FAILURE;
     }
     // Gets the ending time of reading input file  in microseconds
-  
+  end_read_usec=PAPI_get_real_usec;
+  printf("Only read file:\n",end_read_usec-start_usec);
     if (f_status != 0){
 		
         printf("failed to initialize data!\n");
