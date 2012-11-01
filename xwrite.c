@@ -135,7 +135,7 @@ int write_result_vtk(char *outFileName, int startIdx, int endIdx, int nodeCnt, i
 	fprintf(fp,"SCALARS scalars float\nLOOKUP_TABLE default\n");
 
 	for (i = startIdx; i<= endIdx; i++){
-		fprintf(fp,"%f ",vector[i]);
+		fprintf(fp,"%f\n ",vector[i]);
 	}
 
 	fclose(fp);
