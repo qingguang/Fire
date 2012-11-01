@@ -6,6 +6,7 @@
 #include "xread.h"
 #include "xwrite.h"
 #define NUM_EVENTS 4
+#define PeakPer  7970.50
 int main(int argc, char *argv[]) {
 
     if (argc < 4) {
@@ -39,13 +40,10 @@ int main(int argc, char *argv[]) {
     int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
     int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
     /**Papi parameters*/
-    long long values_i[NUM_EVENTS];
-    long long values_c[NUM_EVENTS];
-    long long values_o[NUM_EVENTS]; 
-    float real_time, proc_time, mflops_i,mflops_c,mflops_o;
-    long long flops;
-    double L1mira,L2mira;
-    long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
+    long long values_i[NUM_EVENTS], values_c[NUM_EVENTS], values_o[NUM_EVENTS]; 
+    double mflops[3], mflops_i,mflops_c,mflops_o;
+    double L1mira[3],Lmirate[3], util[3];
+    long long et[3],start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
     /**In cluster mpp_inter L1 and L2 events can not computed at the same time, 
     so set into two groups*/
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
@@ -97,6 +95,8 @@ int main(int argc, char *argv[]) {
     double* adxor2 = (double *) calloc(sizeof(double), (nintcf + 1));
     double* dxor1 = (double *) calloc(sizeof(double), (nintcf + 1));
     double* dxor2 = (double *) calloc(sizeof(double), (nintcf + 1));
+    /**array used for writing measured performance */
+    
     /**store volume information*/
     int nc=0;
     // initialize the reference residual
@@ -150,14 +150,13 @@ int main(int argc, char *argv[]) {
     }else{ 
     printf("****Input phase*********\n");
     printf("EVENTS :%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
-    L1mira=(double)values_i[0]/values_i[1];
-    printf("cache miss rate: %4.6f\n",L1mira);
-   
+    Lmirate[0]=(double)values_i[0]/values_i[1];
+    printf("cache miss rate: %4.6f\n",Lmirate[0]);
     end_usec_1 = PAPI_get_real_usec(); 
-
-    mflops_i = (float) values_i[2] / (end_usec_1-start_usec);
-    printf("Mflops: %4.4f\n",mflops_i);
-
+    
+    mflops[0] = (double) values_i[2] / (end_usec_1-start_usec);
+    printf("Mflops: %4.4f\n",mflops[0]);
+    util[0]=mflops/PeakPer;
     /* start computation loop */
     while (iter < 10000){
 
@@ -265,13 +264,13 @@ int main(int argc, char *argv[]) {
     printf("****Computation phase*********\n");
     printf("EVENTS: %lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
 
-    L1mira=(double)values_c[0]/values_c[1];
-    printf("cache miss rate: %4.6f\n",L1mira);
+    Lmirate[1]=(double)values_c[0]/values_c[1];
+    printf("cache miss rate: %4.6f\n",Lmirate[1]);
 
     //Caculate Mflops using total floating caculation and total caculation time
-    mflops_c = (float) ( values_c[2] ) / ( end_usec_2-end_usec_1 );
+    mflops[1] = (double) ( values_c[2] ) / ( end_usec_2-end_usec_1 );
     printf("Mflops: %4.6f\n",mflops_c);	
-
+    util[1]=mflops[1]/PeakPer;
     /* write output file  */
     /**
     if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
@@ -297,14 +296,17 @@ int main(int argc, char *argv[]) {
     printf("****Output phase*********\n");
     printf("EVENTS : %lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
     
-    L1mira=(double) values_o[0]/values_o[1];
-    printf("cache miss rate :%4.6f\n",L1mira);
+    Lmirate[2]=(double) values_o[0]/values_o[1];
+    printf("cache miss rate :%4.6f\n",Lmirate[2]);
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
     
-    mflops_o = (float) (values_o[2])/(end_usec_3-end_usec_2);
-    printf("Mflops: %4.6f\n",mflops_o);
-   
+    mflops[2] = (float) (values_o[2])/(end_usec_3-end_usec_2);
+    printf("Mflops: %4.6f\n",mflops[2]);
+    util[2] = mflops[2]/PeakPer;
+    et[0] = end_usec_1-start_usec;
+    et[1] = end_usec_2-end_usec_1;
+    et[2] = end_usec_3-end_usec_2;
     printf("Input time:%lld,Computation time:%lld, output time: %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2); 
     /* Free all the dynamically allocated memory */
     free(direc2); free(direc1); free(dxor2); free(dxor1); free(adxor2); free(adxor1);

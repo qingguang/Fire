@@ -141,3 +141,55 @@ int write_result_vtk(char *outFileName, int startIdx, int endIdx, int nodeCnt, i
 	fclose(fp);
 	return 0;
 }
+
+int write_result_dat(char *outFileName, long long values_i,long long values_c,long long values_o, 
+                     double Lmirate, long long et, float mlops, float util)
+{
+        
+        FILE *fp = fopen(outFileName, "w");
+        if(fp == NULL)
+        {
+                printf("Error opening file %s for writing\n", outFileName);
+                return -1;
+        }
+
+       
+        fprintf(fp,"Measured Performance\n");                            // header
+        fprintf(fp,"ASCII\n");                    // file format
+        fprintf(fp,"\n");       // 
+ fprintf(fp,"*****Input phase*****\n",); 
+ fprintf(fp,"INPUT_PAPI_L2_TCM=%lld\n",values_i[0]); 
+ fprintf(fp,"INPUT_PAPI_L2_TCA=%lld\n",values_i[1]); 
+ fprintf(fp,"INPUT_L2_MissRate=%4.4f\n",Lmira[0]); 
+ fprintf(fp,"INPUT_PAPI_FP_INS=%lld\n",values_i[2]); 
+ fprintf(fp,"INPUT_PAPI_TOT_CYC=%lld\n",values_i[3]);
+ fprintf(fp,"INPUT_Execution_Time=%lld\n",et[0]);i
+ fprintf(fp,"Mflop=%f\n",mlops[0]); 
+ fprintf(fp,"INPUT_Util=%f\n",util[0]);
+    fprintf(fp,"\n");
+ fprintf(fp,"*****Computation phase*****\n",);
+ fprintf(fp,"COM_PAPI_L2_TCM=%lld\n",values_c[0]);
+ fprintf(fp,"COM_PAPI_L2_TCA=%lld\n",values_c[1]);
+ fprintf(fp,"COM_L2_MissRate=%f\n",Lmira[1]);
+ fprintf(fp,"COM_PAPI_FP_INS=%lld\n",values_c[2]);
+ fprintf(fp,"COM_PAPI_TOT_CYC=%lld\n",values_c[3]);
+ fprintf(fp,"COM_Execution_Time=%lld\n",et[1]);
+  fprintf(fp,"Mflop=%f\n",mlops[1]);
+ fprintf(fp,"COM_Util=%f\n",util[1]);
+
+   fprintf(fp,"\n");
+ fprintf(fp,"*****Output phase*****\n",);
+ fprintf(fp,"OUT_PAPI_L2_TCM=%lld\n",values_o[0]);
+ fprintf(fp,"OUT_PAPI_L2_TCA=%lld\n",values_o[1]);
+ fprintf(fp,"OUT_L2_MissRate=%f\n",Lmira[2]);
+ fprintf(fp,"OUT_PAPI_FP_INS=%lld\n",values_o[2]);
+ fprintf(fp,"OUT_PAPI_TOT_CYC=%lld\n",values_o[3]);
+ fprintf(fp,"OUT_Execution_Time=%lld\n",et[2]);
+ fprintf(fp,"Mflop=%f\n",mlops[2]); 
+ fprintf(fp,"OUT_Util=%f\n",util[2]);
+  
+
+        fclose(fp);
+        return 0;
+}
+
