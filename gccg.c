@@ -16,9 +16,9 @@ int main(int argc, char *argv[]) {
     char *file_type =argv[1]; 
     char *file_in = argv[2];
     char *file_out = argv[3];
-    char *str1="SU_tjunc.vtk";
-    char *str2="VAR_tjunc.vtk";
-    char *str3="CGUP_tjunc.vtk";    
+    char *str1="SU.vtk";
+    char *str2="VAR.vtk";
+    char *str3="CGUP.vtk";    
     printf("file_type:%s\n",file_type); 
     //strcat(str2,file_out); 
     //strcat(str3,file_out); 
