@@ -38,13 +38,10 @@ int main(int argc, char *argv[]) {
     int* nodeCnt;// = (int *) calloc(sizeof(int), (nintcf + 1)); 
     int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
     int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
-    int nodeCntbin;
-    int** pointsbin;
-    int* elemsbin;
     /**Papi parameters*/
     long long values_i[NUM_EVENTS];
     long long values_c[NUM_EVENTS];
-   long long values_o[NUM_EVENTS]; 
+    long long values_o[NUM_EVENTS]; 
     float real_time, proc_time, mflops_i,mflops_c,mflops_o;
     long long flops;
     double L1mira,L2mira;
@@ -67,9 +64,9 @@ int main(int argc, char *argv[]) {
 		        &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &nboard);
     } else if (strcmp(file_type,"bin") == 0) { 
 
-           f_status = read_unformatted_geo(file_in, &nintci, &nintcf, &nextci,
+           f_status = read_formatted_bin(file_in, &nintci, &nintcf, &nextci,
                       &nextcf, &lcc, &bs, &be, &bn, &bw,
-                      &bl, &bh, &bp, &su, &nodeCntbin, &pointsbin, &elemsbin);
+                      &bl, &bh, &bp, &su,&nboard);
     } else { 
             printf ("Input file format is nor correct\n");
              return EXIT_FAILURE;
@@ -283,11 +280,11 @@ int main(int argc, char *argv[]) {
     printf("error when trying to write to file %s\n", file_out);*/
     
     //transfer volume to mesh
-    if (strcmp(file_type,"text")==0){    
+    // if (strcmp(file_type,"text")==0){    
     if (vol2mesh(nintci, nintcf, lcc, &nodeCnt, &points, &elems) != 0 ){ 
         printf("error when trying to converge topology to volume");
     }   
-    }//write output to vtk file    
+    //write output to vtk file    
     if (write_result_vtk(str1, nintci, nintcf, nodeCnt, points, elems, su) != 0){
        printf("error when write SU to vtk file");
     }

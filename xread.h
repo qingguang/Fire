@@ -19,11 +19,11 @@ int read_formatted(char *fileName,
                 double **BS, double **BE, double **BN, double **BW, double **BL, double **BH, double **BP, double **SU,
                 int **NBOARD
                 );
-int read_unformatted_geo(char *fileName,
+int read_formatted_bin(char *fileName,
                 int *NINTCI, int *NINTCF, int *NEXTCI, int *NEXTCF,
                 int ***LCC,
                 double **BS, double **BE, double **BN, double **BW, double **BL, double **BH, double **BP, double **SU,
-                int* nodeCnt, int***points, int** elems
+                int** NBOARD
                 );
 #endif /* XREAD_H_ */
 

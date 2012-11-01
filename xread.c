@@ -391,11 +391,11 @@ int read_formatted(char *fileName, int *NINTCI, int *NINTCF, int *NEXTCI,
 	fclose(fp);
 	return 0;
 }
-int read_unformatted_geo(char *fileName,
+int read_formatted_bin(char *fileName,
                 int *NINTCI, int *NINTCF, int *NEXTCI, int *NEXTCF,
                 int ***LCC,
                 double **BS, double **BE, double **BN, double **BW, double **BL, double **BH, double **BP, double **SU,
-		int* nodeCnt, int*** points, int*** elems
+		int **NBOARD
                 )
 {
         printf("start reading\n");
@@ -411,7 +411,7 @@ int read_unformatted_geo(char *fileName,
         fread(NINTCF, sizeof(int), 1, fp);
         fread(NEXTCI, sizeof(int), 1, fp);
         fread(NEXTCF, sizeof(int), 1, fp);
-        //allocating LCC
+/*        //allocating LCC
         if((*LCC = (int**)malloc((*NINTCF +1)*sizeof(int*)))==NULL){
           printf("malloc failed to allocate first dimension of LCC (6)");
           return -1;
@@ -422,17 +422,31 @@ int read_unformatted_geo(char *fileName,
                         printf("malloc(LCC) failed\n");
                         return -1;
                 }
-        }
+        }*/
+	//allocating LCC
+	if ((*LCC = (int**) malloc(6 * sizeof(int*))) == NULL)
+	{
+		printf("malloc failed to allocate first dimension of LCC (6)");
+		return -1;
+	}
+	for (i = 0; i < 6; i++)
+	{
+		if (((*LCC)[i] = (int *) malloc((*NINTCF + 1) * sizeof(int))) == NULL)
+		{
+			printf("malloc(LCC) failed\n");
+			return -1;
+		}
+	}
         //start reading LCC
         //Note that C array index starts from 0 while Fortran starts from 1!
         for(i = (*NINTCI); i <= *NINTCF; i++)
         {
-                fread(&(*LCC)[i][0], sizeof(int), 1, fp);
-                fread(&(*LCC)[i][1], sizeof(int), 1, fp);
-                fread(&(*LCC)[i][2], sizeof(int), 1, fp);
-                fread(&(*LCC)[i][3], sizeof(int), 1, fp);
-                fread(&(*LCC)[i][4], sizeof(int), 1, fp);
-                fread(&(*LCC)[i][5], sizeof(int), 1, fp);
+                fread(&(*LCC)[0][i], sizeof(int), 1, fp);
+                fread(&(*LCC)[1][i], sizeof(int), 1, fp);
+                fread(&(*LCC)[2][i], sizeof(int), 1, fp);
+                fread(&(*LCC)[3][i], sizeof(int), 1, fp);
+                fread(&(*LCC)[4][i], sizeof(int), 1, fp);
+                fread(&(*LCC)[5][i], sizeof(int), 1, fp);
         }
         // allocate other arrays
         if((*BS = (double *)malloc((*NEXTCF + 1)*sizeof(double))) == NULL)
@@ -489,43 +503,17 @@ int read_unformatted_geo(char *fileName,
                 fread(&((*SU)[i]), sizeof(double), 1, fp);
         }
 
-	// read geometry
-        //allocate elems
-        if((*elems = (int**)malloc((*NINTCF + 1)*8*sizeof(int)))==NULL){
-          printf("malloc failed to allocate elems");
-          return -1;
-        }
+       // read board
+	if ((*NBOARD = (int *) malloc((*NINTCF + 1) * sizeof(int))) == NULL)
+	{
+		printf("malloc() failed\n");
+		return -1;
+	}
 
-        // read elems
-        int nodeIdx;
-        for(i = (*NINTCI); i < (*NINTCF +1) * 8; i++)
-        {
-                fread(&((*elems)[i]), sizeof(int), 1, fp );
-        }
-
-        fread(nodeCnt, sizeof(int), 1, fp );
-        //allocate points vec
-        if((*points = (int **)calloc((*NINTCF + 1)*8, sizeof(int*))) == NULL){ //note: oversized array .. better safe than sorry ;)
-           printf("malloc() POINTS 1st dim. failed\n");
-           return -1;
-        }
-        for(i = 0; i < (*NINTCF + 1)*8; i++){
-          if(((*points)[i] = (int *)calloc(3, sizeof(int))) == NULL)
-          {
-              printf("malloc() POINTS 2nd dim. failed\n");
-              return -1;
-          }
-        }
-
-        int coordIdx;
-        int pointIdx;
-        for (pointIdx = 0; pointIdx < *nodeCnt; pointIdx++){
-                for(coordIdx = 0; coordIdx < 3; coordIdx++){
-                        fread( &((*points)[pointIdx][coordIdx]), sizeof(int), 1, fp );
-                }
-        }
-
-        fclose(fp);
-
+	for (i = (*NINTCI); i <= *NINTCF; i++)
+		//fscanf(fp, "%d", &((*NBOARD)[i]));
+ fread(&((*NBOARD)[i]), sizeof(int), 1, fp);
+ fclose(fp);
         return 0;
 }
+
