@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     char *str1="SU.vtk";
     char *str2="VAR.vtk";
     char *str3="CGUP.vtk";
-    char *file_perf="pstats.dat"    
+    char *file_perf="pstats.dat";    
     printf("file_type:%s\n",file_type); 
     //strcat(str2,file_out); 
     //strcat(str3,file_out); 
@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
     
     mflops[0] = (double) values_i[2] / (end_usec_1-start_usec);
     printf("Mflops: %4.4f\n",mflops[0]);
-    util[0]=mflops/PeakPer;
+    util[0]=mflops[0]/PeakPer;
     /* start computation loop */
     while (iter < 10000){
 
@@ -275,7 +275,7 @@ int main(int argc, char *argv[]) {
 
     //Caculate Mflops using total floating caculation and total caculation time
     mflops[1] = (double) ( values_c[2] ) / ( end_usec_2-end_usec_1 );
-    printf("Mflops: %4.6f\n",mflops_c);	
+    //printf("Mflops: %4.6f\n",mflops_c);	
     util[1]=mflops[1]/PeakPer;
     /* write output file  */
     /**
@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0){
        printf("error when write CGUP to vtk file");
     }
-    if (write_result_dat(file_perf, values_i,values_c,*values_o,Lmirate, et, mlops, util) != 0 ){
+    if (write_result_dat(file_perf, values_i,values_c, values_o,Lmirate, et, mflops, util) != 0 ){
     printf("error when write measured performance to data file");
     }
        
