@@ -181,7 +181,7 @@ int write_result_dat(char *outFileName, long long *values_i,long long *values_c,
  fprintf(fp,"*****Output phase*****\n");
  fprintf(fp,"OUT_PAPI_L2_TCM=%lld\n",values_o[0]);
  fprintf(fp,"OUT_PAPI_L2_TCA=%lld\n",values_o[1]);
- fprintf(fp,"OUT_L2_MissRate=%f\n",Lmira[2]);
+ fprintf(fp,"OUT_L2_MissRate=%f\n",Lmirate[2]);
  fprintf(fp,"OUT_PAPI_FP_INS=%lld\n",values_o[2]);
  fprintf(fp,"OUT_PAPI_TOT_CYC=%lld\n",values_o[3]);
  fprintf(fp,"OUT_Execution_Time=%lld\n",et[2]);

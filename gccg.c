@@ -19,7 +19,8 @@ int main(int argc, char *argv[]) {
     char *file_out = argv[3];
     char *str1="SU.vtk";
     char *str2="VAR.vtk";
-    char *str3="CGUP.vtk";    
+    char *str3="CGUP.vtk";
+    char *file_perf="pstats.dat"    
     printf("file_type:%s\n",file_type); 
     //strcat(str2,file_out); 
     //strcat(str3,file_out); 
@@ -291,10 +292,15 @@ int main(int argc, char *argv[]) {
        printf("error when write SU to vtk file");
     }
     if (write_result_vtk(str2, nintci, nintcf, nodeCnt, points, elems, var) != 0){
-       printf("error when write VAR to vtk file");}
+       printf("error when write VAR to vtk file");
+    }
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0){
-       printf("error when write CGUP to vtk file");}
-     
+       printf("error when write CGUP to vtk file");
+    }
+    if (write_result_dat(file_perf, values_i,values_c,*values_o,Lmirate, et, mlops, util) != 0 ){
+    printf("error when write measured performance to data file");
+    }
+       
     if ( PAPI_stop_counters( values_o, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
     }else{ 
