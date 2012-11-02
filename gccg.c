@@ -297,9 +297,6 @@ int main(int argc, char *argv[]) {
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0){
        printf("error when write CGUP to vtk file");
     }
-    if (write_result_dat(file_perf, values_i,values_c, values_o,Lmirate, et, mflops, util) != 0 ){
-    printf("error when write measured performance to data file");
-    }
        
     if ( PAPI_stop_counters( values_o, NUM_EVENTS ) != PAPI_OK ){ 
     printf("fail to stop papi counter");
@@ -319,6 +316,9 @@ int main(int argc, char *argv[]) {
     et[1] = end_usec_2-end_usec_1;
     et[2] = end_usec_3-end_usec_2;
     printf("Input time:%lld,Computation time:%lld, output time: %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2); 
+    if (write_result_dat(file_perf, values_i,values_c, values_o,Lmirate, et, mflops, util) != 0 ){
+        printf("error when write measured performance to data file");
+    }
     /* Free all the dynamically allocated memory */
     free(direc2); free(direc1); free(dxor2); free(dxor1); free(adxor2); free(adxor1);
     free(cnorm); free(oc); free(var); free(cgup); free(resvec); free(su); free(bp);
