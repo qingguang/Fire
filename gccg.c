@@ -41,9 +41,9 @@ int main(int argc, char *argv[]) {
     int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
     int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
     /**Papi parameters*/
-    long long *values_i[NUM_EVENTS] = {long long *} calloc(sizeof(long long), 3);
-    long long *values_c[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);
-    long long *values_o[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);  
+    long long *values_i = (long long *) calloc(sizeof(long long), 4);
+    long long *values_c = (long long *) calloc(sizeof(long long), 4);
+    long long *values_o = (long long *) calloc(sizeof(long long), 4);  
     double *mflops = (double *) calloc(sizeof(double), 3);///, mflops_i,mflops_c,mflops_o;
     double *L1mira = (double *) calloc(sizeof(double), 3);
     double *Lmirate = (double *) calloc(sizeof(double), 3);
@@ -312,7 +312,7 @@ int main(int argc, char *argv[]) {
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
     
-    mflops[2] = (float) (values_o[2])/(end_usec_3-end_usec_2);
+    mflops[2] = (double) (values_o[2])/(end_usec_3-end_usec_2);
     printf("Mflops: %4.6f\n",mflops[2]);
     util[2] = mflops[2]/PeakPer;
     et[0] = end_usec_1-start_usec;
