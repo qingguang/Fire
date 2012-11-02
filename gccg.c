@@ -6,7 +6,7 @@
 #include "xread.h"
 #include "xwrite.h"
 #define NUM_EVENTS 4
-#define PeakPer  7970.50
+#define PEAKPER  7970.50
 int main(int argc, char *argv[]) {
 
     if (argc < 4) {
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
     Lmirate[0] = (double) values_i[0] / values_i[1];
     end_usec_1 = PAPI_get_real_usec(); 
     mflops[0] = (double) values_i[2] / (end_usec_1-start_usec);
-    util[0] = mflops[0] / PeakPer;
+    util[0] = mflops[0] / PEAKPER;
 
     /* start computation loop */
     while (iter < 10000){
@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
 
     Lmirate[1] = (double) values_c[0]/values_c[1];
     mflops[1] = (double) values_c[2] / ( end_usec_2-end_usec_1 );
-    util[1] = mflops[1] / PeakPer;
+    util[1] = mflops[1] / PEAKPER;
     /* write output file  */
     
     if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
     mflops[2] = (double) (values_o[2])/(end_usec_3-end_usec_2);
-    util[2] = mflops[2] / PeakPer;
+    util[2] = mflops[2] / PEAKPER;
     /** Write all measured performance to pstats.dat*/
     et[0] = end_usec_1-start_usec;
     et[1] = end_usec_2-end_usec_1;

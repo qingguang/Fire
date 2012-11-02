@@ -284,7 +284,8 @@ int read_formatted(char *fileName, int *NINTCI, int *NINTCF, int *NEXTCI,
 		double **BW, double **BL, double **BH, double **BP, double **SU,
 		int **NBOARD)
 {
-	int i;
+	 printf("start reading\n");
+        int i;
 	FILE *fp = fopen(fileName, "r");
 	if (fp == NULL)
 	{
