@@ -174,8 +174,8 @@ int write_result_dat(char *outFileName, long long *values_i,long long *values_c,
  fprintf(fp,"COM_PAPI_FP_INS=%lld\n",values_c[2]);
  fprintf(fp,"COM_PAPI_TOT_CYC=%lld\n",values_c[3]);
  fprintf(fp,"COM_Execution_Time=%lld\n",et[1]);
-  fprintf(fp,"Mflop=%.4f\n",mlops[1]);
- fprintf(fp,"COM_Util=%.4f\n",util[1]*100);
+ fprintf(fp,"Mflop=%.4f\n",mlops[1]);
+ fprintf(fp,"COM_Util=%.4f%%\n",util[1]*100);
 
    fprintf(fp,"\n");
  fprintf(fp,"*****Output phase*****\n");
