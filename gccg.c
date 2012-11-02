@@ -40,10 +40,15 @@ int main(int argc, char *argv[]) {
     int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
     int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
     /**Papi parameters*/
-    long long values_i[NUM_EVENTS], values_c[NUM_EVENTS], values_o[NUM_EVENTS]; 
-    double mflops[3], mflops_i,mflops_c,mflops_o;
-    double L1mira[3],Lmirate[3], util[3];
-    long long et[3],start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
+    long long *values_i[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);
+    long long *values_c[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);
+    long long *values_o[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);  
+    double *mflops = (double *) calloc(sizeof(double), 3);///, mflops_i,mflops_c,mflops_o;
+    double *L1mira = (double *) calloc(sizeof(double), 3);
+    double *Lmirate = (double *) calloc(sizeof(double), 3);
+    double *util = (double *) calloc(sizeof(double), 3);
+    long long *et = (long long *) calloc(sizeof(long long), 3);
+    long long start_cycles, start_usec,end_cycles_1, end_usec_1, end_cycles_2, end_cycles_3, end_usec_2, end_usec_3;
     /**In cluster mpp_inter L1 and L2 events can not computed at the same time, 
     so set into two groups*/
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};

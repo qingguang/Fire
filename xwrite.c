@@ -142,8 +142,8 @@ int write_result_vtk(char *outFileName, int startIdx, int endIdx, int nodeCnt, i
 	return 0;
 }
 
-int write_result_dat(char *outFileName, long long values_i,long long values_c,long long values_o, 
-                     double Lmirate, long long et, float mlops, float util)
+int write_result_dat(char *outFileName, long long *values_i,long long *values_c,long long *values_o, 
+                     double *Lmirate, long long *et, double *mlops, double *util)
 {
         
         FILE *fp = fopen(outFileName, "w");
