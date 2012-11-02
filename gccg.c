@@ -14,16 +14,13 @@ int main(int argc, char *argv[]) {
 	   return EXIT_FAILURE;
     }
 
-    char *file_type =argv[1]; 
+    char *file_type = argv[1]; 
     char *file_in = argv[2];
     char *file_out = argv[3];
-    char *str1="SU.vtk";
-    char *str2="VAR.vtk";
-    char *str3="CGUP.vtk";
-    char *file_perf="pstats.dat";    
-    printf("file_type:%s\n",file_type); 
-    //strcat(str2,file_out); 
-    //strcat(str3,file_out); 
+    char *str1 = "SU.vtk";
+    char *str2 = "VAR.vtk";
+    char *str3 = "CGUP.vtk";
+    char *file_perf = "pstats.dat";    
     int status = 0;
     /** internal cells start and end index*/
     int nintci, nintcf;
@@ -37,14 +34,14 @@ int main(int argc, char *argv[]) {
     /** boundary coefficients for each volume cell */
     double *bs, *be, *bn, *bw, *bl, *bh, *bp, *su;
     /**parameter used for volmesh and reading binary input file */
-    int* nodeCnt;// = (int *) calloc(sizeof(int), (nintcf + 1)); 
-    int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
-    int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
-    /**Papi parameters*/
+    int* nodeCnt;
+    int*** points;
+    int*** elems;
+    /**Measured Performance and Papi parameters*/
     long long *values_i = (long long *) calloc(sizeof(long long), 4);
     long long *values_c = (long long *) calloc(sizeof(long long), 4);
     long long *values_o = (long long *) calloc(sizeof(long long), 4);  
-    double *mflops = (double *) calloc(sizeof(double), 3);///, mflops_i,mflops_c,mflops_o;
+    double *mflops = (double *) calloc(sizeof(double), 3);
     double *L1mira = (double *) calloc(sizeof(double), 3);
     double *Lmirate = (double *) calloc(sizeof(double), 3);
     double *util = (double *) calloc(sizeof(double), 3);
@@ -53,30 +50,31 @@ int main(int argc, char *argv[]) {
     /**In cluster mpp_inter L1 and L2 events can not computed at the same time, 
     so set into two groups*/
     int Events[NUM_EVENTS]={PAPI_L2_TCM,PAPI_L2_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
-   // int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
-    /* initialization  */
+    // int Events[NUM_EVENTS]={PAPI_L1_TCM,PAPI_L1_TCA,PAPI_FP_INS,PAPI_TOT_CYC};
+    /**start HW counters and execution time recorder*/
     if ( PAPI_start_counters( Events, NUM_EVENTS ) != PAPI_OK )
     printf("Fail to start PAPI counter\n");    
     start_cycles = PAPI_get_real_cyc(); // Gets the starting time in clock cycles
     start_usec = PAPI_get_real_usec(); // Gets the starting time in microseconds
-    
+    /* initialization  */
     // read-in the input file
     int f_status;
     if (strcmp(file_type,"text") == 0) {
 
-             f_status = read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
-		        &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &nboard);
+        f_status = read_formatted(file_in, &nintci, &nintcf, &nextci, &nextcf, &lcc,
+		   &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &nboard);
     } else if (strcmp(file_type,"bin") == 0) { 
 
-           f_status = read_formatted_bin(file_in, &nintci, &nintcf, &nextci,
-                      &nextcf, &lcc, &bs, &be, &bn, &bw,
-                      &bl, &bh, &bp, &su,&nboard);
+        f_status = read_formatted_bin(file_in, &nintci, &nintcf, &nextci,
+                   &nextcf, &lcc, &bs, &be, &bn, &bw,
+                   &bl, &bh, &bp, &su,&nboard);
     } else { 
-            printf ("Input file format is nor correct\n");
+
+        printf ("Input file format is nor correct\n");
              return EXIT_FAILURE;
     }
-    if (f_status != 0){
-		
+    if (f_status != 0){	
+
         printf("failed to initialize data!\n");
 	return EXIT_FAILURE;
     }
@@ -101,8 +99,6 @@ int main(int argc, char *argv[]) {
     double* adxor2 = (double *) calloc(sizeof(double), (nintcf + 1));
     double* dxor1 = (double *) calloc(sizeof(double), (nintcf + 1));
     double* dxor2 = (double *) calloc(sizeof(double), (nintcf + 1));
-    /**array used for writing measured performance */
-    
     /**store volume information*/
     int nc=0;
     // initialize the reference residual
@@ -150,19 +146,15 @@ int main(int argc, char *argv[]) {
     int nor1 = nor - 1;
 	
     /* finished initalization */
-    //read PAPI event counters 
-        if ( PAPI_read_counters( values_i, NUM_EVENTS ) != PAPI_OK ){ 
-    printf("fail to stop papi counter");
-    }else{ 
-    printf("****Input phase*********\n");
-    printf("EVENTS :%lld,%lld,%lld,%lld\n" , values_i[0],values_i[1],values_i[2],values_i[3]);}
-    Lmirate[0]=(double)values_i[0]/values_i[1];
-    printf("cache miss rate: %4.6f\n",Lmirate[0]);
+    /*read PAPI HW counters and caculate performance of input phase*/
+    if ( PAPI_read_counters( values_i, NUM_EVENTS ) != PAPI_OK ){ 
+ 	 printf("fail to stop papi counter");
+    }
+    Lmirate[0] = (double) values_i[0] / values_i[1];
     end_usec_1 = PAPI_get_real_usec(); 
-    
     mflops[0] = (double) values_i[2] / (end_usec_1-start_usec);
-    printf("Mflops: %4.4f\n",mflops[0]);
-    util[0]=mflops[0]/PeakPer;
+    util[0] = mflops[0] / PeakPer;
+
     /* start computation loop */
     while (iter < 10000){
 
@@ -184,12 +176,12 @@ int main(int argc, char *argv[]) {
     // execute normalization steps
     double oc1, oc2, occ;
     if (nor1 == 1){
-    oc1 = 0;
-    occ = 0;
+        oc1 = 0;
+        occ = 0;
     for (nc = nintci; nc <= nintcf; nc++){	
 	occ = occ + adxor1[nc] * direc2[nc];
     }
-    oc1 = occ / cnorm[1];
+         oc1 = occ / cnorm[1];
     for (nc = nintci; nc <= nintcf; nc++){
 	direc2[nc] = direc2[nc] - oc1 * adxor1[nc];
 	direc1[nc] = direc1[nc] - oc1 * dxor1[nc];
@@ -207,7 +199,7 @@ int main(int argc, char *argv[]) {
     for (nc = nintci; nc <= nintcf; nc++){
 	occ = occ + adxor2[nc] * direc2[nc];
     }
-    oc2 = occ / cnorm[2];
+        oc2 = occ / cnorm[2];
     for (nc = nintci; nc <= nintcf; nc++){
 	direc2[nc] = direc2[nc] - oc1 * adxor1[nc] - oc2 * adxor2[nc];
 	direc1[nc] = direc1[nc] - oc1 * dxor1[nc] - oc2 * dxor2[nc];
@@ -255,35 +247,29 @@ int main(int argc, char *argv[]) {
   	 adxor2[nc] = direc2[nc];
     }
     }
-    nor++;
+         nor++;
     }
-    nor1 = nor - 1;
+         nor1 = nor - 1;
 
     }/* end phase 2 */
 
     /* finished computation loop */
+    /*read PAPI HW counters and caculate performance of computation phase*/
     end_cycles_2 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_2 = PAPI_get_real_usec(); // Gets the ending time in microseconds
     if ( PAPI_read_counters( values_c, NUM_EVENTS ) != PAPI_OK ){ 
-    printf("fail to stop papi counter");
-    }else{
-    printf("****Computation phase*********\n");
-    printf("EVENTS: %lld,%lld,%lld,%lld\n" , values_c[0],values_c[1],values_c[2],values_c[3]);}
+         printf("fail to read papi counter");
+    }
 
-    Lmirate[1]=(double)values_c[0]/values_c[1];
-    printf("cache miss rate: %4.6f\n",Lmirate[1]);
-
-    //Caculate Mflops using total floating caculation and total caculation time
-    mflops[1] = (double) ( values_c[2] ) / ( end_usec_2-end_usec_1 );
-    //printf("Mflops: %4.6f\n",mflops_c);	
-    util[1]=mflops[1]/PeakPer;
+    Lmirate[1] = (double) values_c[0]/values_c[1];
+    mflops[1] = (double) values_c[2] / ( end_usec_2-end_usec_1 );
+    util[1] = mflops[1] / PeakPer;
     /* write output file  */
-    /**
+    
     if ( write_result(file_in, file_out, nintci, nintcf, var, iter, ratio) != 0 )
-    printf("error when trying to write to file %s\n", file_out);*/
+    printf("error when trying to write to file %s\n", file_out);
     
     //transfer volume to mesh
-    // if (strcmp(file_type,"text")==0){    
     if (vol2mesh(nintci, nintcf, lcc, &nodeCnt, &points, &elems) != 0 ){ 
         printf("error when trying to converge topology to volume");
     }   
@@ -297,25 +283,20 @@ int main(int argc, char *argv[]) {
     if (write_result_vtk(str3, nintci, nintcf, nodeCnt, points, elems, cgup) != 0){
        printf("error when write CGUP to vtk file");
     }
-       
+    /*read PAPI HW counters and caculate performance of output phase*/  
     if ( PAPI_stop_counters( values_o, NUM_EVENTS ) != PAPI_OK ){ 
-    printf("fail to stop papi counter");
-    }else{ 
-    printf("****Output phase*********\n");
-    printf("EVENTS : %lld,%lld,%lld,%lld\n" , values_o[0],values_o[1],values_o[2],values_o[3]);}
+         printf("fail to stop papi counter");
+    } 
     
-    Lmirate[2]=(double) values_o[0]/values_o[1];
-    printf("cache miss rate :%4.6f\n",Lmirate[2]);
+    Lmirate[2] = (double) values_o[0]/values_o[1];
     end_cycles_3 = PAPI_get_real_cyc(); // Gets the ending time in clock cycles
     end_usec_3 = PAPI_get_real_usec(); // Gets the ending time in microseconds 
-    
     mflops[2] = (double) (values_o[2])/(end_usec_3-end_usec_2);
-    printf("Mflops: %4.6f\n",mflops[2]);
-    util[2] = mflops[2]/PeakPer;
+    util[2] = mflops[2] / PeakPer;
+    /** Write all measured performance to pstats.dat*/
     et[0] = end_usec_1-start_usec;
     et[1] = end_usec_2-end_usec_1;
     et[2] = end_usec_3-end_usec_2;
-    printf("Input time:%lld,Computation time:%lld, output time: %lld\n",end_usec_1-start_usec,end_usec_2-end_usec_1,end_usec_3-end_usec_2); 
     if (write_result_dat(file_perf, values_i,values_c, values_o,Lmirate, et, mflops, util) != 0 ){
         printf("error when write measured performance to data file");
     }
