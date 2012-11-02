@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     int*** points;// = (int ***) calloc(3 * sizeof(int*),nintcf + 1);
     int*** elems;// = (int ***) calloc(8 * sizeof(int*),nintcf + 1);
     /**Papi parameters*/
-    long long *values_i[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);
+    long long *values_i[NUM_EVENTS] = {long long *} calloc(sizeof(long long), 3);
     long long *values_c[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);
     long long *values_o[NUM_EVENTS] = (long long *) calloc(sizeof(long long), 3);  
     double *mflops = (double *) calloc(sizeof(double), 3);///, mflops_i,mflops_c,mflops_o;
