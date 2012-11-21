@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 
+#include "metis.h"
 #include "util_read_files.h"
 #include "initialization.h"
 
@@ -16,7 +17,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
                    int*** points, int** elems, double** var, double** cgup, double** oc,
                    double** cnorm, int** local_global_index, int** global_local_index,
                    int* neighbors_count, int** send_count, int*** send_list, int** recv_count,
-                   int*** recv_list, int** epart, int** npart, int* objval) {
+                   int*** recv_list, int** epart, int** npart, int** objval) {
     /********** START INITIALIZATION **********/
     int i = 0;
     // read-in the input file
@@ -56,6 +57,20 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for ( i = (*nintci); i <= (*nintcf); i++ )
         (*cgup)[i] = 1.0 / ((*bp)[i]);
 
+    //Data distribution
+    //classical 
+    //Metis Dual
+    int ne = *nintcf-*nintci+1;
+    int nn = *points_count;
+    int* vwgt ;
+    int* vsize ;
+    int ncommon = 4;
+    int nparts = 6;
+    int* tpwgts;
+    int* options; 
+    METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, ncommon, nparts, tpwgts, options, objval, epart, npart);
+    //Metis Node
+    METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
     return 0;
 }
 

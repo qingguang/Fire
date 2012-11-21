@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 #include "mpi.h"
-
+#include "metis.h"
 #include "initialization.h"
 #include "compute_solution.h"
 #include "finalization.h"
@@ -86,12 +86,12 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-    /* test_distribution( file_in, file_vtk_out, local_global_index, 
-     num_elems, cgup_local, epart, npart, objval ); */
+     test_distribution( file_in, out_prefix, local_global_index, 
+     num_elems, cgup_local, epart, npart, objval ); 
 
     // Implement this function in test_functions.c and call it here
-    /*test_communication( file_in, file_vtk_out, local_global_index, num_elems,
-     neighbors_count, send_count, send_list, recv_count, recv_list );*/
+    test_communication( file_in, out_prefix, local_global_index, num_elems,
+     neighbors_count, send_count, send_list, recv_count, recv_list );
 
     /********** END INITIALIZATION **********/
 
