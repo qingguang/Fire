@@ -5,13 +5,14 @@
 ####################################################################
 
 CC = mpicc
-CFLAGS = -Wall -g -O0 
+CFLAGS = -Wall -g -O3 
 LIBS = -lm
 
 LIBPOS=libpos.a
 AR = ar
 ARFLAGS = rv
 
+CFLAGS += $(METIS_INC)
 SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c
 OBJS =  $(addsuffix .o, $(basename $(SRCS)))
 
