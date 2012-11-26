@@ -14,6 +14,7 @@ ARFLAGS = rv
 
 CFLAGS += $(METIS_INC)
 SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c
+#SRCS = initialization.c util_read_files.c util_write_files.c
 OBJS =  $(addsuffix .o, $(basename $(SRCS)))
 
 all: gccg 
@@ -28,4 +29,4 @@ $(LIBPOS) : $(OBJS)
 	$(AR) $(ARFLAGS) $@ $+
 
 clean:
-	rm -rf *.o gccg $(LIBPOS)
+	rm -rf *.o gccg *.out *.vtk $(LIBPOS)
