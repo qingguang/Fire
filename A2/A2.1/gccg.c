@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 #include "mpi.h"
-#include "metis.h"
+//#include "metis.h"
 
 #include "initialization.h"
 #include "compute_solution.h"
@@ -75,6 +75,8 @@ int main(int argc, char *argv[]) {
 
     /********** START INITIALIZATION **********/
     // read-in the input file
+    //printf("processor number is%d \n", my_rank);
+    //if (my_rank==0){
     int init_status = initialization(file_in, part_type, &nintci, &nintcf, &nextci, &nextcf, &lcc,
                                      &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &points_count, &points,
                                      &elems, &var, &cgup, &oc, &cnorm, &local_global_index,
@@ -87,27 +89,28 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-    // test_distribution( file_in, file_vtk_out, local_global_index, 
-    // num_elems, cgup_local, epart, npart, objval ); 
-
+     if ( my_rank=3 ) { 
+     //test_distribution( file_in, out_prefix, local_global_index, 
+     //num_elems, cgup_local, epart, npart, objval ); 
+     }
     // Implement this function in test_functions.c and call it here
-    //test_communication( file_in, file_vtk_out, local_global_index, num_elems,
-    // neighbors_count, send_count, send_list, recv_count, recv_list );
+    //test_communication( file_in, out_prefix, local_global_index, num_elems,
+     //neighbors_count, send_count, send_list, recv_count, recv_list );
 
     /********** END INITIALIZATION **********/
-
+    
     /********** START COMPUTATIONAL LOOP **********/
-    int total_iters = compute_solution(max_iters, nintci, nintcf, nextcf, lcc, bp, bs, bw, bl, bn,
-                                       be, bh, cnorm, var, su, cgup, &residual_ratio,
-                                       local_global_index, global_local_index, neighbors_count,
-                                       send_count, send_list, recv_count, recv_list);
+    //int total_iters = compute_solution(max_iters, nintci, nintcf, nextcf, lcc, bp, bs, bw, bl, bn,
+    //                                    be, bh, cnorm, var, su, cgup, &residual_ratio,
+    //                                   local_global_index, global_local_index, neighbors_count,
+    //                                   send_count, send_list, recv_count, recv_list);
     /********** END COMPUTATIONAL LOOP **********/
 
     /********** START FINALIZATION **********/
-    finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
-                 points, elems, var, cgup, su);
+    //finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
+    //             points, elems, var, cgup, su);
     /********** END FINALIZATION **********/
-
+    /* 
     free(cnorm);
     free(oc);
     free(var);
@@ -120,7 +123,8 @@ int main(int argc, char *argv[]) {
     free(bn);
     free(be);
     free(bs);
-
+    */
+    //}
     MPI_Finalize();    /// Cleanup MPI
 
     return 0;
