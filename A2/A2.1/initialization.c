@@ -59,18 +59,20 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
 
     //Data distribution
     //classical 
-    //Metis Dual
-    int ne = *nintcf-*nintci+1;
-    int nn = *points_count;
+    /*//Metis Dual
+    int64_t ne = 100;//*nintcf-*nintci+1;
+    int64_t nn = 1000;//*points_count;
+    //int* eptr = *element
     int* vwgt ;
     int* vsize ;
     int ncommon = 4;
     int nparts = 6;
     int* tpwgts;
     int* options; 
-    METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, ncommon, nparts, tpwgts, options, objval, epart, npart);
+    METIS_PartMeshDual(&ne, &nn, *elems, *points, &vwgt, &vsize, ncommon, nparts, tpwgts, &options, objval, epart, npart);
     //Metis Node
     METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
-    return 0;
+    */    
+return 0;
 }
 
