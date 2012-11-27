@@ -89,15 +89,15 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //printf("npartpro is :%d\n",t);
     } 
     //MPI_Scatter (cgup, 47312, MPI_DOUBLE, rebu, npartpro, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    //MPI_Bcast (&*lcc,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //Metis Dual
     /*int ne = *nintcf-*nintci+1;
     int nn = *points_count;
     //classical 
-    /*Metis Dual
-    int64_t ne = 100;//*nintcf-*nintci+1;
-    int64_t nn = 1000;//*points_count;
+    *Metis Dual
+    int64_t ne = 100;*nintcf-*nintci+1;
+    int64_t nn = 1000;*points_count;
     //int* eptr = *element
     int* vwgt ;
     int* vsize ;
