@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-///#include "metis.h"
+#include "metis.h"
 #include "util_read_files.h"
 #include "initialization.h"
 #include "mpi.h"
@@ -74,11 +74,11 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for ( i = (*nintci); i <= (*nintcf); i++ )
         (*cgup)[i] = 1.0 / ((*bp)[i]);
     //End of reading and initialize by one processor
-    }
+    
     //test
     int t=1;
     printf("values cgup:%f\n", (*cgup)[1]);
-    printf("nintcf is:%d,%d,%d \n", *nintci,*nintcf);
+    printf("nintcf is:%d,%d \n", *nintci,*nintcf);
     //t=1;
     
     //Data distribution
@@ -88,28 +88,36 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //printf("npartpro is :%d\n",t);
     } 
     //MPI_Scatter (cgup, 47312, MPI_DOUBLE, rebu, npartpro, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    //MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //Metis Dual
     /*int ne = *nintcf-*nintci+1;
     int nn = *points_count;
-    int64_t ne = 100;//*nintcf-*nintci+1;
-    int64_t nn = 1000;//*points_count;
+    int64_t ne = 100;*nintcf-*nintci+1;
+    int64_t nn = 1000;*points_count;
     //int* eptr = *element
     int* vwgt ;
-    int* vsize ;
-    idx_t* ncommon = 4;
-    idx_t* nparts = 6;
-    int* tpwgts;
+    int* vsize ;*/
+    int *ncommon = (int*) malloc(sizeof(int));
+    *ncommon = 4;
+    int *nparts =  (int*) malloc(sizeof(int));
+    *nparts = 6;
+    int **eptr = (int*) calloc(sizeof(int), (*nintcf + 1));;
+    //*eptr[0]=0;
+    for ( i = (*nintci); i < (*nintcf + 1) ; i++ ) {
+        (*eptr)[i]=i*8;
+    }
+
+    //int *tpwgts;
     //int* options; 
-    idx_t options[METIS_NOPTIONS];
-    options[METIS_OPTION_NUMBERING]=0;
-    int metis_final=METIS_PartMeshDual(nintcf+1, points_count, **lcc, *elems, NULL, NULL, 
-                                       ncommon, nparts, NULL,options, &**objval, &**epart, &**npart);
-    if (metis_final != METIS_OK){
-         printf("Metis part Dual fails\n");
-        }
-    //Metis Node
+    //int* options[METIS_NOPTIONS];
+    //options[METIS_OPTION_NUMBERING]=0;
+    METIS_PartMeshDual(nintcf+1, points_count, eptr, *elems, NULL, NULL, 
+                                       ncommon, nparts, NULL,NULL, *objval, *epart, *npart);
+    //if (metis_final != METIS_OK){
+      //   printf("Metis part Dual fails\n");
+        //}
+    /*//Metis Node
     METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
     */
     return 0;

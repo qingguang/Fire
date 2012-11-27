@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 #include "mpi.h"
-//#include "metis.h"
+#include "metis.h"
 
 #include "initialization.h"
 #include "compute_solution.h"
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-     if ( my_rank=3 ) { 
+     if ( my_rank == 3 ) { 
      //test_distribution( file_in, out_prefix, local_global_index, 
      //num_elems, cgup_local, epart, npart, objval ); 
      }
