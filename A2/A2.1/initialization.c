@@ -112,11 +112,12 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //int* options; 
     //int* options[METIS_NOPTIONS];
     //options[METIS_OPTION_NUMBERING]=0;
-    METIS_PartMeshDual(nintcf+1, points_count, eptr, *elems, NULL, NULL, 
+    /*int metis_final = METIS_PartMeshDual(nintcf+1, points_count, *eptr, *elems, NULL, NULL, 
                                        ncommon, nparts, NULL,NULL, *objval, *epart, *npart);
-    //if (metis_final != METIS_OK){
-      //   printf("Metis part Dual fails\n");
-        //}
+    if (metis_final != METIS_OK){
+         printf("Metis part Dual fails\n");
+        i}
+     */
     /*//Metis Node
     METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
     */
