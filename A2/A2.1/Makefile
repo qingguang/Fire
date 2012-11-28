@@ -12,8 +12,8 @@ LIBPOS=libpos.a
 AR = ar
 ARFLAGS = rv
 
-CFLAGS += $(METIS_INC)
-LIBS   += $(METIS_LIB)
+#CFLAGS += $(METIS_INC)
+#LIBS   += $(METIS_LIB)
 #LIBPOS  += libmetis.a
 LIBS += -lmetis
 SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c

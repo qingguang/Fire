@@ -32,7 +32,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
                                    &*points, &*elems);
     
     if ( f_status != 0 ) return f_status;
-    }
+}    
   //  int npro=(*nintcf + 1)/num_procs;
 //   double* cgup_local=(double*) calloc(sizeof(double), npro);
     MPI_Bcast (nintci,1, MPI_INT, 0, MPI_COMM_WORLD);    
@@ -44,6 +44,8 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     *cgup = (double*) calloc(sizeof(double), (*nextcf + 1));
     *oc = (double*) calloc(sizeof(double), (*nintcf + 1));
     *cnorm = (double*) calloc(sizeof(double), (*nintcf + 1));
+    int npro=(*nintcf + 1)/num_procs;
+    double *cgup_local = (double*) calloc(sizeof(double), npro);
     //if (my_rank==1){
     //printf("in processor 1 nintcf is : %d, elems %d, cgup%f\n", *nintcf,(*elems)[0],(*cgup)[0]);
     //}
@@ -131,20 +133,23 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for(i = 0; i < node_num; i++ )
         (*npart)[i] = (int) npart_METIS[i]; 
     printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart)[2]);
-   }//end single processor
-   
-   int npro=(*nintcf + 1)/num_procs;
-   double *cgup_local = (double*) calloc(sizeof(double), npro);
-   if (my_rank==1){
+ //  }//end single processor
+}   
+//   int npro=(*nintcf + 1)/num_procs;
+ //  double *cgup_local = (double*) calloc(sizeof(double), npro);
+   if (my_rank==0){
    printf("processor 1 npro is%d,cgup%f \n", npro,(*cgup)[0]);
 }
+MPI_Barrier(MPI_COMM_WORLD);
+
    //if (strcmp(part_type,"classical") == 0) {
-       //MPI_Scatter(cgup, 2, MPI_DOUBLE, cgup,2,MPI_DOUBLE,0, MPI_COMM_WORLD);
-// MPI_Bcast(cgup, *nintcf+1, MPI_DOUBLE,0, MPI_COMM_WORLD);    
+       MPI_Scatter(*cgup, npro, MPI_DOUBLE, cgup_local, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
+//MPI_Bcast(*cgup, *nintcf+1, MPI_DOUBLE,0, MPI_COMM_WORLD);    
 //}
 if (my_rank==1)
-printf("processor 1 after MBI_scatter cgup_local is%f\n",(*cgup)[0]);
+printf("processor 1 after MBI_scatter cgup_local is%f\n",cgup_local[0]);
 //MPI_Barrier(MPI_COMM_WORLD);
+
 return 0;
 }
 

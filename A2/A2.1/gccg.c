@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     //finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
     //             points, elems, var, cgup, su);
     /********** END FINALIZATION **********/
-      
+    /*  
     free(cnorm);
     free(oc);
     free(var);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
     free(bn);
     free(be);
     free(bs);
-    
+    */
     //}
     MPI_Finalize();    /// Cleanup MPI
 
