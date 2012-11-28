@@ -135,16 +135,17 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart)[2]);
 //   int npro=(*nintcf + 1)/num_procs;
  //  double *cgup_local = (double*) calloc(sizeof(double), npro);
+}
+MPI_Barrier(MPI_COMM_WORLD);
    if (my_rank==0){
    printf("processor 1 npro is%d,cgup%f \n", npro,(*cgup)[0]);
 }
-MPI_Barrier(MPI_COMM_WORLD);
 
    //if (strcmp(part_type,"classical") == 0) {
        MPI_Scatter(*cgup, npro, MPI_DOUBLE, cgup_local, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
 //MPI_Bcast(*cgup, *nintcf+1, MPI_DOUBLE,0, MPI_COMM_WORLD);    
 //}
-}
+
 if (my_rank==1)
 printf("processor 1 after MBI_scatter cgup_local is%f\n",cgup_local[0]);
 //MPI_Barrier(MPI_COMM_WORLD);
