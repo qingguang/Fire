@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-///#include "metis.h"
+//#include "metis.h"
 #include "util_read_files.h"
 #include "initialization.h"
 #include "mpi.h"
@@ -74,14 +74,13 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for ( i = (*nintci); i <= (*nintcf); i++ )
         (*cgup)[i] = 1.0 / ((*bp)[i]);
     //End of reading and initialize by one processor
-    }
-    //test
-    int t=1;
-    if (my_rank==0){
-    printf("values cgup:%f\n", (*cgup)[1]);
-    printf("nintcf is:%d,%d,%d \n", *nintci,*nintcf);
-    //t=1;
     
+    //test
+    printf("values cgup:%f\n", (*cgup)[1]);
+    printf("nintcf is:%d,%d \n", *nintci,*nintcf);
+    //t=1;
+    printf("elems%d,%d\n",(*nintcf+1)*8,(*elems)[(*nintcf+1)*8-9]);
+ 
     //Data distribution
     //classical data distribution from one processor to all another 
     //double* rebu=(double*) calloc(sizeof(double), (*nintcf + 1)/num_procs);
@@ -89,7 +88,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //printf("npartpro is :%d\n",t);
     } 
     //MPI_Scatter (cgup, 47312, MPI_DOUBLE, rebu, npartpro, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    //MPI_Bcast (&*lcc,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    //MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //Metis Dual
     /*int ne = *nintcf-*nintci+1;
@@ -100,13 +99,29 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     int64_t nn = 1000;*points_count;
     //int* eptr = *element
     int* vwgt ;
-    int* vsize ;
-    int ncommon = 4;
-    int nparts = 6;
-    int* tpwgts;
-    int* options; 
-    METIS_PartMeshDual(&ne, &nn, *elems, *points, &vwgt, &vsize, ncommon, nparts, tpwgts, &options, objval, epart, npart);
-    //Metis Node
+    int* vsize ;*/
+    //int *ncommon = (int*) malloc(sizeof(int));
+    //*ncommon = 4;
+    //int *nparts =  (int*) malloc(sizeof(int));
+    //*nparts = 6;
+    /*local_global_index = (int*) calloc(sizeof(int), (*nintcf + 1));
+    *//*eptr[0]=0;
+    for ( i = (*nintci); i < (*nintcf + 1) ; i++ ) {
+        (*local_global_index)[i]=i*8;
+    }
+    printf("eptr is %d",(*local_global_index)[8] );
+    printf("elements and nodes:%d,%d\n",*nintcf+1,*points_count);
+    //int *tpwgts;
+    //int* options; 
+    //int* options[METIS_NOPTIONS];
+    //options[METIS_OPTION_NUMBERING]=0;
+    *//*int metis_final = METIS_PartMeshDual(nintcf+1, points_count, *eptr, *elems, NULL, NULL, 
+                                       ncommon, nparts, NULL,NULL, *objval, *epart, *npart);
+    if (metis_final != METIS_OK){
+         printf("Metis part Dual fails\n");
+        i}
+     */
+    /*//Metis Node
     METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
     */
     return 0;
