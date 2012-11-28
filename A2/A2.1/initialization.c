@@ -95,7 +95,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     idx_t ne = (idx_t) elem_num;
     idx_t nn = (idx_t) points_num;
     idx_t ncommon= 4;
-    idx_t nparts = 2;
+    idx_t nparts = 6;
     int node_num=ne*8;
     idx_t *eptr = (idx_t*) calloc(sizeof(idx_t), elem_num + 1);
 
@@ -139,11 +139,11 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
    printf("processor 1 npro is%d,cgup%f \n", npro,(*cgup)[0]);
 }
    //if (strcmp(part_type,"classical") == 0) {
-       MPI_Scatter(cgup, 2, MPI_DOUBLE, cgup,2,MPI_DOUBLE,0, MPI_COMM_WORLD);
- //MPI_Scatter(cgup, 100, MPI_DOUBLE,0, MPI_COMM_WORLD);    
+       //MPI_Scatter(cgup, 2, MPI_DOUBLE, cgup,2,MPI_DOUBLE,0, MPI_COMM_WORLD);
+// MPI_Bcast(cgup, *nintcf+1, MPI_DOUBLE,0, MPI_COMM_WORLD);    
 //}
-if (my_rank=1)
-printf("processoe after MBI_scatter cgup_local is%f\n",(*cgup)[0]);
+if (my_rank==1)
+printf("processor 1 after MBI_scatter cgup_local is%f\n",(*cgup)[0]);
 //MPI_Barrier(MPI_COMM_WORLD);
 return 0;
 }
