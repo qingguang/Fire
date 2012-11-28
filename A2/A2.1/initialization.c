@@ -127,7 +127,6 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         eind[i] = (idx_t) (*elems)[i];
     (*epart) = (int*) calloc(sizeof(int), ne);
     (*npart) = (int*) calloc(sizeof(int), node_num);
-    printf("numberelement and node%d,%d,%d\n",(*elems)[(*nintcf+1)*8-1], *points_count,(eptr)[*nintcf+1]);
     //int *tpwgts;
     //int* options; 
    // int* options[METIS_NOPTIONS];
@@ -137,12 +136,12 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     idx_t *npart_METIS = (idx_t*) calloc(sizeof(idx_t), node_num);
 
     int metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
-                                       &ncommon, &nparts, NULL,NULL, &objval_METIS, *epart, *npart);
+                                       &ncommon, &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
     if (metis_final != METIS_OK){
          printf("Metis part Dual fails\n");
        }
-    (*objval)=(int*) calloc(sizeof(int), ne);
-    (*objval)=(int) objval_METIS;
+    (*objval)=(int*) calloc(sizeof(int), 1);
+    (*objval)[0]=(int) objval_METIS;
     for(i = 0; i < elem_num; i++ )
         (*epart)[i] = (int) epart_METIS[i];
     for(i = 0; i < node_num; i++ )
