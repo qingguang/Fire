@@ -13,7 +13,9 @@ AR = ar
 ARFLAGS = rv
 
 CFLAGS += $(METIS_INC)
-LIBS   += $(METIS_LIB)
+#LIBS   += $(METIS_LIB)
+#LIBPOS  += libmetis.a
+LIBS += -lmetis
 SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c
 #SRCS = initialization.c util_read_files.c util_write_files.c
 OBJS =  $(addsuffix .o, $(basename $(SRCS)))

@@ -25,7 +25,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    /// Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    /// get number of processe
     // read-in the input file by one processor
-        printf("processor number is%d \n", my_rank);
+    printf("processor number is%d\n", my_rank);
     if (my_rank==0) {      
     int f_status = read_binary_geo(file_in, &*nintci, &*nintcf, &*nextci, &*nextcf, &*lcc, &*bs,
                                    &*be, &*bn, &*bw, &*bl, &*bh, &*bp, &*su, &*points_count,
@@ -33,18 +33,22 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     
     if ( f_status != 0 ) return f_status;
     }
+  //  int npro=(*nintcf + 1)/num_procs;
+//   double* cgup_local=(double*) calloc(sizeof(double), npro);
     MPI_Bcast (nintci,1, MPI_INT, 0, MPI_COMM_WORLD);    
     MPI_Bcast (nintcf,1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast (nextci,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast (nextcf,1, MPI_INT, 0, MPI_COMM_WORLD);
-    if (my_rank==1){
-    printf("nintci is : %d\n", *nextcf);
-    }
+    MPI_Bcast (nextcf,1, MPI_INT, 0, MPI_COMM_WORLD); 
+    //MPI_Bcast (,1, MPI_INT, 0, MPI_COMM_WORLD);
     *var = (double*) calloc(sizeof(double), (*nextcf + 1));
     *cgup = (double*) calloc(sizeof(double), (*nextcf + 1));
     *oc = (double*) calloc(sizeof(double), (*nintcf + 1));
     *cnorm = (double*) calloc(sizeof(double), (*nintcf + 1));
-    
+    //if (my_rank==1){
+    //printf("in processor 1 nintcf is : %d, elems %d, cgup%f\n", *nintcf,(*elems)[0],(*cgup)[0]);
+    //}
+    //else {
+    //printf("elems is %d",(*elems)[0]); }
     if (my_rank==0)
     {
 
@@ -75,19 +79,14 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         (*cgup)[i] = 1.0 / ((*bp)[i]);
     //End of reading and initialize by one processor
     
-    //test
-    printf("values cgup:%f\n", (*cgup)[1]);
-    printf("nintcf is:%d,%d \n", *nintci,*nintcf);
-    //t=1;
-    printf("elems%d,%d\n",(*nintcf+1)*8,(*elems)[(*nintcf+1)*8-9]);
+    //printf("values cgup:%f\n", (*cgup)[1]);
  
     //Data distribution
     //classical data distribution from one processor to all another 
     //double* rebu=(double*) calloc(sizeof(double), (*nintcf + 1)/num_procs);
     //int npartpro=(*nextcf + 1)/num_procs;
     //printf("npartpro is :%d\n",t);
-    } 
-    //MPI_Scatter (cgup, 47312, MPI_DOUBLE, rebu, npartpro, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    
     //MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //Metis Dual
@@ -114,9 +113,10 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     idx_t *epart_METIS = (idx_t*) calloc(sizeof(idx_t), elem_num);
     idx_t *npart_METIS = (idx_t*) calloc(sizeof(idx_t), node_num);
     int metis_final;
+    
      if (strcmp(part_type,"dual") == 0) {
          metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
-                                       &ncommon, &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
+                                       &ncommon, &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS); 
      } else if (strcmp(part_type,"nodal") == 0) {
       metis_final = METIS_PartMeshNodal(&ne,&nn,eptr, eind, NULL, NULL,
                                        &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
@@ -129,13 +129,22 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for(i = 0; i < elem_num; i++ )
         (*epart)[i] = (int) epart_METIS[i];
     for(i = 0; i < node_num; i++ )
-        (*npart)[i] = (int) npart_METIS[i];
-     
+        (*npart)[i] = (int) npart_METIS[i]; 
     printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart)[2]);
-   /* 
-    Metis Node
-    METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
-    */
-    return 0;
+   }//end single processor
+   
+   int npro=(*nintcf + 1)/num_procs;
+   double *cgup_local = (double*) calloc(sizeof(double), npro);
+   if (my_rank==1){
+   printf("processor 1 npro is%d,cgup%f \n", npro,(*cgup)[0]);
+}
+   //if (strcmp(part_type,"classical") == 0) {
+       MPI_Scatter(cgup, 2, MPI_DOUBLE, cgup,2,MPI_DOUBLE,0, MPI_COMM_WORLD);
+ //MPI_Scatter(cgup, 100, MPI_DOUBLE,0, MPI_COMM_WORLD);    
+//}
+if (my_rank=1)
+printf("processoe after MBI_scatter cgup_local is%f\n",(*cgup)[0]);
+//MPI_Barrier(MPI_COMM_WORLD);
+return 0;
 }
 
