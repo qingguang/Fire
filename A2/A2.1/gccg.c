@@ -9,7 +9,7 @@
 #include <string.h>
 #include <math.h>
 #include "mpi.h"
-//#include "metis.h"
+#include "metis.h"
 
 #include "initialization.h"
 #include "compute_solution.h"

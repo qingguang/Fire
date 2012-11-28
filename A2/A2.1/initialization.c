@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-//#include "metis.h"
+#include "metis.h"
 #include "util_read_files.h"
 #include "initialization.h"
 #include "mpi.h"
