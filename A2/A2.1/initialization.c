@@ -91,7 +91,6 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //Metis Dual
-    int nparts = 2;
     int elem_num = *nintcf-*nintci+1;
     int points_num = *points_count;
     idx_t ne = (idx_t) elem_num;
@@ -109,16 +108,17 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         eind[i] = (idx_t) (*elems)[i];
     (*epart) = (int*) calloc(sizeof(int), ne);
     (*npart) = (int*) calloc(sizeof(int), node_num);
-   // int* options[METIS_NOPTIONS];
+    // int* options[METIS_NOPTIONS];
     //options[METIS_OPTION_NUMBERING]=0;
     idx_t objval_METIS;
     idx_t *epart_METIS = (idx_t*) calloc(sizeof(idx_t), elem_num);
     idx_t *npart_METIS = (idx_t*) calloc(sizeof(idx_t), node_num);
+    int metis_final;
      if (strcmp(part_type,"dual") == 0) {
-         int metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
+         metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
                                        &ncommon, &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
      } else if (strcmp(part_type,"nodal") == 0) {
-      int metis_final = METIS PartMeshNodal(&ne,&nn,eptr, eind, NULL, NULL,
+      metis_final = METIS_PartMeshNodal(&ne,&nn,eptr, eind, NULL, NULL,
                                        &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
      }
      if (metis_final != METIS_OK){
