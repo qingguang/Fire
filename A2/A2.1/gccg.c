@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) {
     //finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
     //             points, elems, var, cgup, su);
     /********** END FINALIZATION **********/
-      
-    /*free(cnorm);
+     /* 
+    free(cnorm);
     free(oc);
     free(var);
     free(cgup);
