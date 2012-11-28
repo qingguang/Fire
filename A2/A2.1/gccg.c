@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     //             points, elems, var, cgup, su);
     /********** END FINALIZATION **********/
       
-    free(cnorm);
+    /*free(cnorm);
     free(oc);
     free(var);
     free(cgup);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
     free(bn);
     free(be);
     free(bs);
-    
+    */
     //}
     MPI_Finalize();    /// Cleanup MPI
 

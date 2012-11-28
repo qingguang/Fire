@@ -131,17 +131,19 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for(i = 0; i < node_num; i++ )
         (*npart)[i] = (int) npart_METIS[i]; 
     printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart)[2]);
-   }//end single processor
+  // }//end single processor
    
    int npro=(*nintcf + 1)/num_procs;
    double *cgup_local = (double*) calloc(sizeof(double), npro);
    if (my_rank==1){
    printf("processor 1 npro is%d,cgup%f \n", npro,(*cgup)[0]);
 }
-   //if (strcmp(part_type,"classical") == 0) {
-       //MPI_Scatter(cgup, 2, MPI_DOUBLE, cgup,2,MPI_DOUBLE,0, MPI_COMM_WORLD);
+int sumsize=*nintcf-*nintci+1;
+//   if (strcmp(part_type,"classical") == 0) {
+       MPI_Scatter(epart_METIS,sumsize, MPI_DOUBLE, cgup_local, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
 // MPI_Bcast(cgup, *nintcf+1, MPI_DOUBLE,0, MPI_COMM_WORLD);    
 //}
+}
 if (my_rank==1)
 printf("processor 1 after MBI_scatter cgup_local is%f\n",(*cgup)[0]);
 //MPI_Barrier(MPI_COMM_WORLD);
