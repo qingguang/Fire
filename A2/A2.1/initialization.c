@@ -133,8 +133,8 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
    // int* options[METIS_NOPTIONS];
     //options[METIS_OPTION_NUMBERING]=0;
     idx_t objval_METIS;
-    idx_t *epart_METIS = (idx_t*) calloc(sizeof(idx_t), num_elems);
-    idx_t *npart_METIS = (idx_t*) calloc(sizeof(idx_t), num_nodes);
+    idx_t *epart_METIS = (idx_t*) calloc(sizeof(idx_t), elem_num);
+    idx_t *npart_METIS = (idx_t*) calloc(sizeof(idx_t), node_num);
 
     int metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
                                        &ncommon, &nparts, NULL,NULL, &objval_METIS, *epart, *npart);
@@ -143,9 +143,9 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
        }
     (*objval)=(int*) calloc(sizeof(int), ne);
     (*objval)=(int) objval_METIS;
-    for(i = 0; i < num_elems; i++ )
+    for(i = 0; i < elem_num; i++ )
         (*epart)[i] = (int) epart_METIS[i];
-    for(i = 0; i < num_nodes; i++ )
+    for(i = 0; i < node_num; i++ )
         (*npart)[i] = (int) npart_METIS[i];
      
     
