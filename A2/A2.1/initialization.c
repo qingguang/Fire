@@ -91,14 +91,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //MPI_Bcast (&*cgup,*nextcf + 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     //Metis Dual
-    /*int ne = *nintcf-*nintci+1;
-    int nn = *points_count;
-    //classical 
-    
-    int ncommon= 4;
     int nparts = 2;
-     //int* eptr = *element
-     =======*/
     int elem_num = *nintcf-*nintci+1;
     int points_num = *points_count;
     idx_t ne = (idx_t) elem_num;
@@ -106,17 +99,6 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     idx_t ncommon= 4;
     idx_t nparts = 2;
     int node_num=ne*8;
-    //int* eptr = *element
-    //int *ncommon = (int*) malloc(sizeof(int));
-    //int *nparts =  (int*) malloc(sizeof(int));
-   /*nparts = 6;
-    int *eptr = (int*) calloc((ne + 1),sizeof(int));;
-    for ( i = (*nintci); i <= (ne+1) ; i++ ) {
-        eptr[i]=i*8;
-    }*/
-    //printf("numberelement and node%d,%d,%d\n",(*elems)[(*nintcf+1)*8-1], *points_count,(eptr)[*nintcf+1]);
-    //int *eptr = (int*) calloc(sizeof(int), ne+1);
-    //*eptr[0]=0;
     idx_t *eptr = (idx_t*) calloc(sizeof(idx_t), elem_num + 1);
 
     for ( i = (*nintci); i <= (*nintcf + 1) ; i++ ) {
@@ -127,18 +109,20 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         eind[i] = (idx_t) (*elems)[i];
     (*epart) = (int*) calloc(sizeof(int), ne);
     (*npart) = (int*) calloc(sizeof(int), node_num);
-    //int *tpwgts;
-    //int* options; 
    // int* options[METIS_NOPTIONS];
     //options[METIS_OPTION_NUMBERING]=0;
     idx_t objval_METIS;
     idx_t *epart_METIS = (idx_t*) calloc(sizeof(idx_t), elem_num);
     idx_t *npart_METIS = (idx_t*) calloc(sizeof(idx_t), node_num);
-
-    int metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
+     if (strcmp(part_type,"dual") == 0) {
+         int metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
                                        &ncommon, &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
-    if (metis_final != METIS_OK){
-         printf("Metis part Dual fails\n");
+     } else if (strcmp(part_type,"nodal") == 0) {
+      int metis_final = METIS PartMeshNodal(&ne,&nn,eptr, eind, NULL, NULL,
+                                       &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
+     }
+     if (metis_final != METIS_OK){
+         printf("Metis part fails\n");
        }
     (*objval)=(int*) calloc(sizeof(int), 1);
     (*objval)[0]=(int) objval_METIS;
@@ -147,9 +131,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for(i = 0; i < node_num; i++ )
         (*npart)[i] = (int) npart_METIS[i];
      
-    
-    //Metis Node
-    printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart[2]));
+    printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart)[2]);
    /* 
     Metis Node
     METIS_PartMeshDual(ne, nn, eptr, eind, vwgt, vsize, nparts, tpwgts, options, objval, epart, npart);
