@@ -15,8 +15,8 @@ ARFLAGS = rv
 CFLAGS += $(METIS_INC)
 LIBS   += $(METIS_LIB)
 #LIBPOS  += libmetis.a
-#LIBS += -lmetis
-SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c
+LIBS += -lmetis
+SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c test_functions.c
 #SRCS = initialization.c util_read_files.c util_write_files.c
 OBJS =  $(addsuffix .o, $(basename $(SRCS)))
 
@@ -25,7 +25,8 @@ all: gccg
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-gccg: gccg.c $(LIBPOS) test_functions.o
+gccg: gccg.c $(LIBPOS) 
+#test_functions.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 $(LIBPOS) : $(OBJS)
