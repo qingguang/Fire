@@ -14,7 +14,7 @@
 #include "util_write_files.h"
 
 int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems,
-                      double *cgup_local, int* epart, int* npart, int* objval) {
+                      double *cgup, int* epart, int* npart, int* objval) {
     int i;
     int my_rank, num_procs;
     /** Simulation parameters parsed from the input datasets */
@@ -50,11 +50,11 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     for( i = (nintci); i <= (nintcf); i++ ) { 
        (distr)[i] = 0.0;
     }
-    for (i=0; i<=num_elems/num_procs ;i++) {
+    for (i=0; i< num_elems/num_procs ;i++) {
     int k = local_global_index[i];
-    (distr)[k] = cgup_local[i]; 
+    (distr)[k] = cgup[i]; 
     }
-    printf("processor 1 cgup[0] is%f\n ", cgup_local[0]);
+    //printf("processor 1 cgup[0] is%f\n ", cgup[0]);
     vtk_write_unstr_grid_header(file_in, file_vtk_out, nintci, nintcf, points_count, points, elems);
     vtk_append_double(file_vtk_out, "CGUP", nintci, nintcf, distr);    
     

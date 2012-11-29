@@ -89,13 +89,11 @@ int main(int argc, char *argv[]) {
 
     // Implement this function in test_functions.c and call it here
     int num_elems = nintcf-nintci+1;; 
-    //double *cgup_local;
-    //char *file_vtk_out = "third";
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
-    if ( my_rank == 4 ) {
+    if ( my_rank == num_procs/2 ) {
      test_distribution( file_in, file_vtk_out, local_global_index, 
-     num_elems, cgup_local, epart, npart, objval ); 
+     num_elems, cgup, epart, npart, objval ); 
      }
     // Implement this function in test_functions.c and call it here
     //test_communication( file_in, out_prefix, local_global_index, num_elems,
@@ -114,7 +112,7 @@ int main(int argc, char *argv[]) {
     //finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
     //             points, elems, var, cgup, su);
     /********** END FINALIZATION **********/
-     /* 
+     
     free(cnorm);
     free(oc);
     free(var);
@@ -127,7 +125,7 @@ int main(int argc, char *argv[]) {
     free(bn);
     free(be);
     free(bs);
-    */
+    
     //}
     MPI_Finalize();    /// Cleanup MPI
 
