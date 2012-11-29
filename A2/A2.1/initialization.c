@@ -20,6 +20,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     /********** START INITIALIZATION **********/
     int i = 0;
     int my_rank, num_procs;
+    MPI_Status status;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    /// Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    /// get number of processe
     // read-in the input file by one processor
@@ -89,6 +90,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     printf("local_global_index %d\n",(*local_global_index)[0]);
     //MPI_Bcast(*cgup, *nintcf+1, MPI_DOUBLE,0, MPI_COMM_WORLD);  
     }else{
+    
     if (my_rank==0){
     //Metis Dual
     idx_t ne = (idx_t) num_elems;
@@ -126,13 +128,37 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         (*epart)[i] = (int) epart_METIS[i];
     for(i = 0; i < node_num; i++ )
         (*npart)[i] = (int) npart_METIS[i]; 
-    printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[1],(*epart)[2]);
+    printf("epart is %d,%d, %d\n",(*epart)[0],(*epart)[4],(*epart)[num_elems]);
     //Full METIS arrary should be avaible for every processor
+    } 
     MPI_Bcast(*epart,num_elems,MPI_INT,0,MPI_COMM_WORLD);
     MPI_Bcast(*npart,num_elems*8,MPI_INT,0,MPI_COMM_WORLD);
     //ditribute data according to METIS Partition
-        
-    }//finish sinle 
+    MPI_Bcast(*cgup,num_elems,MPI_INT,0,MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+    int p = 0;
+    int j= 0;
+    int k = 0;
+     //while (k < npro) {
+    while (j < num_elems){
+        //double buf = (*cgup)[i];
+     if ( my_rank == (*epart)[j]){
+         (*cgup_local)[k] = (*cgup)[j];
+          //k=k+1;
+          (*local_global_index)[k] = j;
+ 
+    //printf("j is,%d,%d,%d,%f\n",num_elems,(*epart)[j],my_rank,(*local_global_index)[k],(*cgup_local)[k]);
+    k=k+1;
+    } 
+    j=j+1;
+    }
+    printf("local processor%d,%d\n",my_rank, (*local_global_index)[npro]); 
+   // MPI_Wait (&request, &status);
+   // MPI_Irecv (recv_buffer, BUFSIZ, MPI_DOUBLE, 0, 77, MPI_COMM_WORLD,
+    //           &request);
+   // MPI_Wait (&request, &status);
+    
+    //finish sinle 
     }//finish metis
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -141,7 +167,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
        printf("processor 0 npro is%d,cgup%f \n", npro,(*cgup_local)[0]);
     }
     if (my_rank==1)
-        printf("processor 1 after MBI_scatter cgup_local is,%fepart is%d \n",(*cgup_local)[0],(*epart)[0]);
+        printf("processor 1 cgup_local is: %f,  epart is%d \n",(*cgup_local)[0],(*epart)[0]);
 
     return 0;
     }

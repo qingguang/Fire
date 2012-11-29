@@ -54,9 +54,9 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     int k = local_global_index[i];
     (distr)[k] = cgup_local[i]; 
     }
-    printf("processor 1 cgup[0] is%f ", cgup_local[0]);
+    printf("processor 1 cgup[0] is%f\n ", cgup_local[0]);
     vtk_write_unstr_grid_header(file_in, file_vtk_out, nintci, nintcf, points_count, points, elems);
-    vtk_append_double(file_vtk_out, "CGUP", nintci, nintcf, cgup_local);    
+    vtk_append_double(file_vtk_out, "CGUP", nintci, nintcf, distr);    
     
     // Return an error if not implemented
     return -1;

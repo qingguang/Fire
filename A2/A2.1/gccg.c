@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
     //char *file_vtk_out = "third";
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
-    if ( my_rank == 0 ) {
+    if ( my_rank == 4 ) {
      test_distribution( file_in, file_vtk_out, local_global_index, 
      num_elems, cgup_local, epart, npart, objval ); 
      }
