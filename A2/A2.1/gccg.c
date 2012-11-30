@@ -88,12 +88,13 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-    int num_elems = nintcf-nintci+1;; 
+    int num_elems = nintcf - nintci + 1; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
     if ( my_rank == 3 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
                            num_elems, cgup, epart, npart, objval ); 
+    //printf("professor is %d\n", 0);
     }
     // Implement this function in test_functions.c and call it here
     //test_communication( file_in, out_prefix, local_global_index, num_elems,

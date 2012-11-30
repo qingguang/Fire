@@ -53,23 +53,35 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     int num_elems = *nintcf-*nintci+1;
     int points_num = *points_count;
     int npro = num_elems/num_procs;
-    int remain = *nextcf - *nextci + 1;
-    *local_global_index = (int*) calloc(sizeof(int), npro+remain);
+    int exter = *nextcf - *nextci + 1;
+    int remain = 0;
+    if (my_rank == (num_procs-1) ) {
+        remain = num_elems % num_procs;
+    }
+    //printf("my_rank is %d, remain is %d \n", my_rank, remain);
+    int local_array_size = npro + remain + exter;
+    *local_global_index = (int*) calloc(sizeof(int), npro+exter);
     *epart = (int*) calloc(sizeof(int), num_elems);
     *npart = (int*) calloc(sizeof(int), num_elems*8);
-    *bs = (double*) calloc(sizeof(double), (npro+remain));
-    *bn = (double*) calloc(sizeof(double), (npro+remain));
-    *bw = (double*) calloc(sizeof(double), (npro+remain));
-    *be = (double*) calloc(sizeof(double), (npro+remain)); 
-    *bl = (double*) calloc(sizeof(double), (npro+remain));
-    *bh = (double*) calloc(sizeof(double), (npro+remain));
-    *bp = (double*) calloc(sizeof(double), (npro+remain));
-    *su = (double*) calloc(sizeof(double), (npro+remain));
-    *var = (double*) calloc(sizeof(double), (npro+remain));
-    *cgup = (double*) calloc(sizeof(double), (npro+remain));
-    *oc = (double*) calloc(sizeof(double), (npro));
-    *cnorm = (double*) calloc(sizeof(double), (npro));
-
+    *lcc = (int**) calloc(sizeof(int*), (local_array_size));
+    *bs = (double*) calloc(sizeof(double), (local_array_size));
+    *bn = (double*) calloc(sizeof(double), (local_array_size));
+    *bw = (double*) calloc(sizeof(double), (local_array_size));
+    *be = (double*) calloc(sizeof(double), (local_array_size)); 
+    *bl = (double*) calloc(sizeof(double), (local_array_size));
+    *bh = (double*) calloc(sizeof(double), (local_array_size));
+    *bp = (double*) calloc(sizeof(double), (local_array_size));
+    *su = (double*) calloc(sizeof(double), (local_array_size));
+    *var = (double*) calloc(sizeof(double), (local_array_size));
+    *cgup = (double*) calloc(sizeof(double), (local_array_size));
+    *oc = (double*) calloc(sizeof(double), (npro+remain));
+    *cnorm = (double*) calloc(sizeof(double), (npro+remain));
+    for ( i = 0; i <  npro + exter; i++ ) {
+        (*lcc)[i] = (int *) calloc(sizeof(int), (6));
+    } 
+    if ( my_rank ==0 ) {
+    
+    } 
     //choose part type 
     if (strcmp(part_type,"classical") == 0) {
 
@@ -83,7 +95,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         MPI_Scatter(bp_a, npro, MPI_DOUBLE, *bp, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(su_a, npro, MPI_DOUBLE, *su, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         //MPI_Scatter(lcc_a, npro, MPI_DOUBLE, *lcc, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
-
+        //printf("lcc is %d", (*lcc)[0][0]);
     //initialization of computational array 
     for ( i = 0; i <= 10; i++ ) {
         (*oc)[i] = 0.0;
@@ -95,7 +107,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         (*var)[i] = 0.0;
     }
 
-    for ( i = npro; i < npro+remain; i++ ) {
+    for ( i = npro; i < npro+exter; i++ ) {
         (*var)[i] = 0.0;
         (*cgup)[i] = 0.0;
         (*bs)[i] = 0.0;
@@ -143,7 +155,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     if ( strcmp(part_type,"dual") == 0 ) {
          metis_final = METIS_PartMeshDual(&ne,&nn,eptr, eind, NULL, NULL, 
                                           &ncommon, &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS); 
-    } else if ( strcmp(part_type,"nodal") == 0 ) {
+    } else if ( strcmp(part_type,"noda") == 0 ) {
                 metis_final = METIS_PartMeshNodal(&ne,&nn,eptr, eind, NULL, NULL,
                                                   &nparts, NULL,NULL, &objval_METIS, epart_METIS, npart_METIS);
     }
@@ -240,7 +252,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         (*var)[i] = 0.0;
     }
 
-    /*for ( i = k[my_rank]; i < [k_myrank]+remain; i++ ) {
+    for ( i = k[my_rank]; i < npro+exter; i++ ) {
         (*var)[i] = 0.0;
         (*cgup)[i] = 0.0;
         (*bs)[i] = 0.0;
@@ -249,10 +261,10 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         (*bw)[i] = 0.0;
         (*bl)[i] = 0.0;
         (*bh)[i] = 0.0;
-    }*/
+    }
  
     for ( i = 0; i < k[my_rank]; i++ )
-       (*cgup)[i] = 1.0 / ((*bp)[i]);
+          (*cgup)[i] = 1.0 / ((*bp)[i]);
 
     MPI_Barrier(MPI_COMM_WORLD);
 

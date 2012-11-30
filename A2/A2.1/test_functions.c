@@ -50,8 +50,12 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     for( i = (nintci); i <= (nintcf); i++ ) { 
        (distr)[i] = 0.0;
     }
-    int npro = num_elems/num_procs;
-    int remain = nextcf -nextci;
+    int npro = num_elems / num_procs;
+    int exter = nextcf -nextci +1;
+    int remain = 0;
+    if (my_rank == (num_procs-1) ) {
+        remain = num_elems % num_procs;
+    }
     for ( i= 0; i < npro+remain ;i++) {
           int k = local_global_index[i];
           (distr)[k] = cgup[i]; 
@@ -61,7 +65,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     
     // Return an error if not implemented
     return -1;
-}
+    }
 
     //int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int *num_elems,
     //                 int neighbors_count, int* send_count, int** send_list, int* recv_count,
