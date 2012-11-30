@@ -36,7 +36,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     // read-in the input file by one processor
     
     if ( my_rank == 0 ) {
-         int f_status = read_binary_geo(file_in, &*nintci, &*nintcf, &*nextci, &*nextcf, &lcc_a, &bs_a,
+         int f_status = read_binary_geo(file_in, &*nintci, &*nintcf, &*nextci, &*nextcf, &lcc, &bs_a,
                                         &be_a, &bn_a, &bw_a, &bl_a, &bh_a, &bp_a, &su_a, &*points_count,
                                         &*points, &*elems);
          if ( f_status != 0 ) return f_status;
@@ -58,12 +58,10 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     if (my_rank == (num_procs-1) ) {
         remain = num_elems % num_procs;
     }
-    //printf("my_rank is %d, remain is %d \n", my_rank, remain);
     int local_array_size = npro + remain + exter;
     *local_global_index = (int*) calloc(sizeof(int), npro+exter);
     *epart = (int*) calloc(sizeof(int), num_elems);
     *npart = (int*) calloc(sizeof(int), num_elems*8);
-    *lcc = (int**) calloc(sizeof(int*), (local_array_size));
     *bs = (double*) calloc(sizeof(double), (local_array_size));
     *bn = (double*) calloc(sizeof(double), (local_array_size));
     *bw = (double*) calloc(sizeof(double), (local_array_size));
@@ -76,12 +74,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     *cgup = (double*) calloc(sizeof(double), (local_array_size));
     *oc = (double*) calloc(sizeof(double), (npro+remain));
     *cnorm = (double*) calloc(sizeof(double), (npro+remain));
-    for ( i = 0; i <  npro + exter; i++ ) {
-        (*lcc)[i] = (int *) calloc(sizeof(int), (6));
-    } 
-    if ( my_rank ==0 ) {
-    
-    } 
+
     //choose part type 
     if (strcmp(part_type,"classical") == 0) {
 
@@ -94,8 +87,6 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         MPI_Scatter(bh_a, npro, MPI_DOUBLE, *bh, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(bp_a, npro, MPI_DOUBLE, *bp, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(su_a, npro, MPI_DOUBLE, *su, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
-        //MPI_Scatter(lcc_a, npro, MPI_DOUBLE, *lcc, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
-        //printf("lcc is %d", (*lcc)[0][0]);
     //initialization of computational array 
     for ( i = 0; i <= 10; i++ ) {
         (*oc)[i] = 0.0;
