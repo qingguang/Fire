@@ -206,7 +206,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     }
     //printf("j is,%d,%d,%d,%f\n",num_elems,(*epart)[j],my_rank,(*local_global_index)[k],(*cgup_local)[k]);
     }
-k[my_rank] = k[my_rank]-1;
+//k[my_rank] = k[my_rank]-1;
   // printf("pro is : %d and k0 is: %d k1 is %d\n", my_rank, (*local_global_index)[k[0]-1],(*local_global_index)[k[1]-1]);
    // } 
   }
@@ -228,10 +228,10 @@ if ( my_rank == 0 ) {
 // bp_b[i]=bp_a[j]; 
 // }
 // int *k_sum = (int*) calloc(sizeof(int), num_procs);
-k_sum[0]=k[0];
+//k_sum[0]=k[0];
 for (i =1; i<num_procs; i++)
  {
-   k_sum[i]=k_sum[i-1]+k[i];
+   k_sum[i]=k_sum[i-1]+k[i-1];
   }
 }  
   //MPI_Sendrecv_replace( &k[1], 1, MPI_INT, 0, 10, &j, 1, MPI_INT, 1, MPI_INT, MPI_COMM_WORLD, &status[0]);  
@@ -240,7 +240,7 @@ for (i =1; i<num_procs; i++)
 MPI_Gatherv( *local_global_index, k[my_rank], MPI_INT,
                 local_global_index_sum, k, k_sum,
                 MPI_INT, 0, MPI_COMM_WORLD);
-printf("k_sum [end]%d, elems : %d\n",k_sum[num_procs-1],num_elems);
+printf("myrank%d,k_sum [end]%d, local : %d\n",my_rank,local_global_index_sum[num_elems-1],(*local_global_index)[k[my_rank]-1]);
 
   //MPI_Scatter(bp_a, npro, MPI_DOUBLE, *bp, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
   MPI_Scatterv( bp_a, k, k_sum , MPI_DOUBLE, *bp, k[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);  
