@@ -50,7 +50,9 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     for( i = (nintci); i <= (nintcf); i++ ) { 
        (distr)[i] = 0.0;
     }
-    for (i=0; i< num_elems/num_procs ;i++) {
+    int npro = num_elems/num_procs;
+    int remain = nextcf -nextci;
+    for (i=0; i< npro+remain ;i++) {
     int k = local_global_index[i];
     (distr)[k] = cgup[i]; 
     }

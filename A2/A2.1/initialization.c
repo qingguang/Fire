@@ -185,10 +185,11 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //printf("k is %f\n", (*bp)[0]);
     int p = 0;
     int j= 0;
-    int k = 0;
-    //for (p=0; p< num_procs; p++){
+    //int k = 0;
+    int *k = (int*) calloc(sizeof(int), num_procs);
+    for (p=0; p< num_procs; p++){
     //k=0;
-    if (my_rank == 3){
+   if (my_rank == p){
     //for ( i = 0; i < npro; i++ ) {
      //   (*local_global_index)[i] = my_rank * npro + i;
    // }
@@ -198,18 +199,41 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
      //if ( my_rank == (*epart)[j]){
         // (*cgup)[k] = (*cgup)[j];
           //k=k+1;
-         if ( (*epart)[j] == 1){
-         (*local_global_index)[k]= j ;
-             k=k+1;
-    
+         if ( (*epart)[j] == my_rank){
+         (*local_global_index)[k[my_rank]]= j ;
+             k[my_rank]=k[my_rank]+1;
+      //   (*bp)[k[my_rank]]= 
     }
     //printf("j is,%d,%d,%d,%f\n",num_elems,(*epart)[j],my_rank,(*local_global_index)[k],(*cgup_local)[k]);
     }
+  // printf("pro is : %d and k0 is: %d k1 is %d\n", my_rank, (*local_global_index)[k[0]-1],(*local_global_index)[k[1]-1]);
    // } 
   }
-    //}
-    MPI_Scatter(bp_a, npro, MPI_DOUBLE, *bp, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
-    for ( i = 0; i < npro; i++ )
+
+   MPI_Bcast(&k[p],1,MPI_INT,p,MPI_COMM_WORLD);
+
+   }
+  //put new array store vector 
+  int *k_sum = (int*) calloc(sizeof(int), num_procs);
+ if ( my_rank == 0 ) {
+ //double *bp_b = (double*) calloc(sizeof(double), (num_elems+num_procs));
+ //for (i= 0; i<num_elems; i++){
+ //*bp_b[i]= 
+ //}
+// int *k_sum = (int*) calloc(sizeof(int), num_procs);
+ for (i =1; i<num_procs; i++)
+ {
+   k_sum[i]=k_sum[i-1]+k[i];
+  }
+}  
+  //MPI_Sendrecv_replace( &k[1], 1, MPI_INT, 0, 10, &j, 1, MPI_INT, 1, MPI_INT, MPI_COMM_WORLD, &status[0]);  
+  // MPI_Sendrecv_replace( &k[1], 1, MPI_INT, 0, 10, 1, 10, MPI_COMM_WORLD, &status[0]);  
+  
+   printf("pro is : %d and k0 is: %d k1 is %d\n", my_rank, k[0],k[1]);
+
+  //MPI_Scatter(bp_a, npro, MPI_DOUBLE, *bp, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
+  MPI_Scatterv( bp_a, k, k_sum , MPI_DOUBLE, *bp, k[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);  
+  for ( i = 0; i < k[my_rank]; i++ )
        (*cgup)[i] = 1.0 / ((*bp)[i]);
 
     //printf("local processor%d,%d\n",my_rank, (*local_global_index)[npro]); 
