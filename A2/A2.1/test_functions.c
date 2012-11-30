@@ -52,11 +52,10 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     }
     int npro = num_elems/num_procs;
     int remain = nextcf -nextci;
-    for (i=0; i< npro+remain ;i++) {
-    int k = local_global_index[i];
-    (distr)[k] = cgup[i]; 
+    for ( i= 0; i < npro+remain ;i++) {
+          int k = local_global_index[i];
+          (distr)[k] = cgup[i]; 
     }
-    //printf("processor 1 cgup[0] is%f\n ", cgup[0]);
     vtk_write_unstr_grid_header(file_in, file_vtk_out, nintci, nintcf, points_count, points, elems);
     vtk_append_double(file_vtk_out, "CGUP", nintci, nintcf, distr);    
     
@@ -65,9 +64,9 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
 }
 
     //int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int *num_elems,
-      //                 int neighbors_count, int* send_count, int** send_list, int* recv_count,
-        //               int** recv_list) {
+    //                 int neighbors_count, int* send_count, int** send_list, int* recv_count,
+    //               int** recv_list) {
     // Return an error if not implemented
-  //  return -1;
-//}
+    //  return -1;
+    //}
 
