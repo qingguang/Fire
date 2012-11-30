@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     int num_elems = nintcf-nintci+1;; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
-    if ( my_rank == 0 ) {
+    if ( my_rank == 3 ) {
      test_distribution( file_in, file_vtk_out, local_global_index, 
      num_elems, cgup, epart, npart, objval ); 
      }
