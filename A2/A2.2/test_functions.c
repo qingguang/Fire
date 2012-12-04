@@ -70,7 +70,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int *num_elems,
                      int neighbors_count, int* send_count, int** send_list, int* recv_count,
                    int** recv_list) {
-   int i;
+   int i, j;
     int my_rank, num_procs;
     /** Simulation parameters parsed from the input datasets */
 
@@ -109,11 +109,13 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     neighbors[3] = 28441;
     neighbors[4] = 37410;
     neighbors[5] = 100233;
-    for ( i= 0; i < 6 ;i++) {
-          int k = neighbors[i];
+    for ( i =0; i<num_procs; i++){
+    for ( j= 0; j < num_elems ;j++) {
+          int k = recv_list[i][j];
           (commlist)[k] = 5;
+   printf("k is:%d\n",k);
     } 
-     (commlist)[2] =  10000; 
+    }
     
 
     vtk_append_integer(file_vtk_out, "commlist", nintci, nintcf, commlist);
