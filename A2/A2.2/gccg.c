@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     /** Additional vectors required for the computation */
     double *cgup, *oc, *cnorm;
-    double *cgup_local;
+    //double *cgup_local;
     /** Geometry data */
     int points_count;    /// total number of points that define the geometry
     int** points;    /// coordinates of the points that define the cells - size [points_cnt][3]
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
                                      &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &points_count, &points,
                                      &elems, &var, &cgup, &oc, &cnorm, &local_global_index,
                                      &global_local_index, &neighbors_count, &send_count, &send_list,
-                                     &recv_count, &recv_list, &epart, &npart, &objval,&cgup_local);
+                                     &recv_count, &recv_list, &epart, &npart, &objval);
 
     if ( init_status != 0 ) {
         fprintf(stderr, "Failed to initialize data!\n");
@@ -97,8 +97,8 @@ int main(int argc, char *argv[]) {
     //printf("professor is %d\n", 0);
     }
     // Implement this function in test_functions.c and call it here
-    //test_communication( file_in, out_prefix, local_global_index, num_elems,
-    //                    neighbors_count, send_count, send_list, recv_count, recv_list );
+    test_communication( file_in, file_vtk_out, local_global_index, num_elems,
+                        neighbors_count, send_count, send_list, recv_count, recv_list );
 
     /********** END INITIALIZATION **********/
     
