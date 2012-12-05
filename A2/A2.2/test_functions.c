@@ -56,7 +56,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     if (my_rank == (num_procs-1) ) {
         remain = num_elems % num_procs;
     }
-    for ( i= 0; i < npro+remain ;i++) {
+    for ( i= 0; i < npro+exter ;i++) {
           int k = local_global_index[i];
           (distr)[k] = cgup[i]; 
     }
@@ -67,7 +67,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     return -1;
     }
 
-    int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int *num_elems,
+    int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems,
                      int neighbors_count, int* send_count, int** send_list, int* recv_count,
                    int** recv_list) {
    int i, j;
@@ -103,17 +103,11 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
    int *commlist = (int*) calloc(sizeof(int), (nextcf + 1));
    
     int *neighbors = (int*) calloc(sizeof(int), (6));
-    neighbors[0] =104359;
-    neighbors[1] = 50711;
-    neighbors[2] = 115589;
-    neighbors[3] = 28441;
-    neighbors[4] = 37410;
-    neighbors[5] = 100233;
     for ( i =0; i<num_procs; i++){
-    for ( j= 0; j < *num_elems ;j++) {
+    for ( j= 0; j < num_elems ;j++) {
           int k = recv_list[i][j];
           (commlist)[k] = 5;
-   printf("k is:%d\n",k);
+    //if (k != 0) printf("k is:%d\n",k);
     } 
     }
     
