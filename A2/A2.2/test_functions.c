@@ -56,7 +56,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     if (my_rank == (num_procs-1) ) {
         remain = num_elems % num_procs;
     }
-    for ( i= 0; i < npro+exter ;i++) {
+    for ( i= 0; i < npro+remain+exter ;i++) {
           int k = local_global_index[i];
           (distr)[k] = cgup[i]; 
     }
@@ -99,10 +99,14 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
         fprintf(stderr, "Failed to initialize data!\n");
         MPI_Abort(MPI_COMM_WORLD, my_rank);
     }
-int npro = num_elems / num_procs;
+    int npro = num_elems / num_procs;
+     int remain = 0;
+     if (my_rank == (num_procs-1) ) {
+        remain = num_elems % num_procs;
+    }    
     int exter = nextcf -nextci +1; 
-   int *commlist = (int*) calloc(sizeof(int), (nextcf + 1));
- for ( i= 0; i < npro+exter ;i++) {
+    int *commlist = (int*) calloc(sizeof(int), (nextcf + 1));
+     for ( i= 0; i < npro+remain+exter ;i++) {
           k = local_global_index[i];
           (commlist)[k] = 15;
     }

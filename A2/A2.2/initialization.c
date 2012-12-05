@@ -105,9 +105,9 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     printf("kc[my_rank]%d\n", k_c[my_rank]);
     int p = 0;
     for ( p = 0; p < num_procs; p++ ) {
-    if (my_rank == p){ 
+    //if (my_rank == p){ 
         MPI_Bcast(&k_c[p],1,MPI_INT,p,MPI_COMM_WORLD);
-    }
+    //}
     }
     int *k_c_sum = (int*) calloc(sizeof(int), num_procs);
     if ( my_rank == 0 ) {
@@ -115,8 +115,8 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
                k_c_sum[i]=k_c_sum[i-1]+k_c[i-1];
     }
     }
-    //printf("myrank %d,kc_sum[my_rank]%d\n", my_rank,k_c_sum[1]);
-    /*
+    printf("myrank %d,kc[my_rank]%d\n", my_rank,k_c[1]);
+   /* 
     double *bs_b = (double*) calloc(sizeof(double), (num_elems));
     double *bn_b = (double*) calloc(sizeof(double), (num_elems));
     double *bw_b = (double*) calloc(sizeof(double), (num_elems));
@@ -125,17 +125,17 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     double *bh_b = (double*) calloc(sizeof(double), (num_elems));
     double *bp_b = (double*) calloc(sizeof(double), (num_elems));
     double *su_b = (double*) calloc(sizeof(double), (num_elems));
-      for ( i = 0; i < npro+remain; i++ ) {
-        (*local_global_index)[i] = my_rank * npro + i;
-    }
-    int *local_global_index_sum = (int*) calloc(sizeof(int), num_elems);
+    //  for ( i = 0; i < npro+remain; i++ ) {
+      //  (*local_global_index)[i] = my_rank * npro + i;
+    //}
+    //int *local_global_index_sum = (int*) calloc(sizeof(int), num_elems);
     //MPI_Gatherv( *local_global_index, k_c[my_rank], MPI_INT,
      //            local_global_index_sum, k_c, k_c_sum,
        //          MPI_INT, 0, MPI_COMM_WORLD);
     //int j = 0;
     if (my_rank==0){
     for (i= 0; i<num_elems; i++){
-        j=local_global_index_sum[i];
+        j=i;
         bs_b[i]=bs_a[j];
         bn_b[i]=bn_a[j];
         bw_b[i]=bw_a[j];
@@ -144,11 +144,11 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         bh_b[i]=bh_a[j];
         bp_b[i]=bp_a[j];
         su_b[i]=su_a[j];
-    /}
-    }*/
-
+    }
+    }
+*/
         //ditribute all B* array
-        MPI_Scatter(bs_a, npro, MPI_DOUBLE, *bs, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
+        /*MPI_Scatter(bs_a, npro, MPI_DOUBLE, *bs, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(bn_a, npro, MPI_DOUBLE, *bn, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(bw_a, npro, MPI_DOUBLE, *bw, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(be_a, npro, MPI_DOUBLE, *be, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
@@ -156,7 +156,15 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         MPI_Scatter(bh_a, npro, MPI_DOUBLE, *bh, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(bp_a, npro, MPI_DOUBLE, *bp, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatter(su_a, npro, MPI_DOUBLE, *su, npro,MPI_DOUBLE,0, MPI_COMM_WORLD);
-        //MPI_Scatterv(bs_b, k_c, k_c_sum, MPI_DOUBLE, *bs, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        */
+        MPI_Scatterv(bs_a, k_c, k_c_sum, MPI_DOUBLE, *bs, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(bn_a, k_c, k_c_sum, MPI_DOUBLE, *bn, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(bw_a, k_c, k_c_sum, MPI_DOUBLE, *bw, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(be_a, k_c, k_c_sum, MPI_DOUBLE, *be, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(bl_a, k_c, k_c_sum, MPI_DOUBLE, *bl, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(bh_a, k_c, k_c_sum, MPI_DOUBLE, *bh, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(bp_a, k_c, k_c_sum, MPI_DOUBLE, *bp, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
+        MPI_Scatterv(su_a, k_c, k_c_sum, MPI_DOUBLE, *su, k_c[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
         //printf(" processor %d scatterv sucess\n", my_rank);
     /* create a datatype to describe the subarrays of the global array */
 
@@ -195,9 +203,10 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
                  npro*6, MPI_INT,
                  0, MPI_COMM_WORLD);*/
     //initialization of computational array 
-     for ( i = 0; i < npro+remain; i++ ) {
+     for ( i = 0; i < num_elems_pro; i++ ) {
          (*local_global_index)[i] = my_rank * npro + i;
-        for (j = 0;j < 6;j++){
+  //if ((my_rank*npro+i)> num_elems) printf("larfer number:%\n", (my_rank*npro+i));
+       for (j = 0;j < 6;j++){
               (*lcc)[i][j]=lcc_b[my_rank*npro+i][j];
               }
     }
@@ -418,8 +427,12 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     if (num_elems_global < num_elems){
     // choose part type
     if (strcmp(part_type,"classical") == 0) {
-    rank[my_rank]= num_elems_global/npro;
-    }else{ 
+        if (num_elems_global >= npro * num_procs){ 
+            rank[my_rank]= num_elems_global/npro-1;
+        }else{ 
+            rank[my_rank]= num_elems_global/npro;
+        }
+    }else{
     rank[my_rank]=(*epart)[num_elems_global];
     }
     if (rank[my_rank] != my_rank ) {
