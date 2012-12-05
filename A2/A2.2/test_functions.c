@@ -70,7 +70,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems,
                      int neighbors_count, int* send_count, int** send_list, int* recv_count,
                    int** recv_list) {
-   int i, j;
+   int i=0, j=0, kp=0, k=0;
     int my_rank, num_procs;
     /** Simulation parameters parsed from the input datasets */
 
@@ -99,19 +99,36 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
         fprintf(stderr, "Failed to initialize data!\n");
         MPI_Abort(MPI_COMM_WORLD, my_rank);
     }
- 
+int npro = num_elems / num_procs;
+    int exter = nextcf -nextci +1; 
    int *commlist = (int*) calloc(sizeof(int), (nextcf + 1));
-   
+ for ( i= 0; i < npro+exter ;i++) {
+          k = local_global_index[i];
+          (commlist)[k] = 15;
+    }
+ 
+// for (i=0; i<nintcf; i++){
+  //      (commlist)[i]=15;
+    //    } 
     int *neighbors = (int*) calloc(sizeof(int), (6));
-    for ( i =0; i<num_procs; i++){
-    for ( j= 0; j < num_elems ;j++) {
-          int k = recv_list[i][j];
+    printf("recv_list%d\n",recv_list[0][0]);
+    for ( i = 0; i < num_procs; i++){
+    //printf("i is:%d",i);
+      // printf("send_count%d\n",send_count[i]);
+    for ( j = 0; j < recv_count[i] ;j++) {
+    //for ( i = 0; i < num_procs; i++){    
+         k = recv_list[i][j];
+      //   printf("i is:%d, j is %d\n",kp,j);
+    //printf("recv_list%d\n",recv_list[0][j]);
           (commlist)[k] = 5;
     //if (k != 0) printf("k is:%d\n",k);
     } 
+    for (kp =0; kp< send_count[i]; kp++){
+         k=send_list[i][kp];
+        (commlist)[k]=10;
     }
-    
-
+    }
+   
     vtk_append_integer(file_vtk_out, "commlist", nintci, nintcf, commlist);
     
     // Return an error if not implemented

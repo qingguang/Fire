@@ -56,7 +56,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     if (my_rank == (num_procs-1) ) {
         remain = num_elems % num_procs;
     }
-    for ( i= 0; i < npro+remain ;i++) {
+    for ( i= 0; i < npro+exter ;i++) {
           int k = local_global_index[i];
           (distr)[k] = cgup[i]; 
     }

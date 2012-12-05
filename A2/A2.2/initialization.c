@@ -93,14 +93,9 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     *lcc = (int**) calloc(sizeof(int*),(local_array_size));
     for ( i = 0; i < local_array_size; i++ ) {
          (*lcc)[i] = (int *) calloc(sizeof(int),(6));
-     }
-    //printf("my_rank:%d,lcc_a[2][0]%d\n",my_rank,lcc_b[num_elems-1][5]);
+    }
     MPI_Bcast (&(lcc_b[0][0]),num_elems*6, MPI_INT, 0, MPI_COMM_WORLD);
-    //    printf("my_rank: %d,lcc_b: %d\n",my_rank,lcc_b[0][0]); 
     MPI_Barrier(MPI_COMM_WORLD);    
-    //for (i =0; i<6; i++){
-   // printf("my_rank:%d,lcc(2)[%d] is %d\n",my_rank, i,(lcc_b)[0][i]);
-   // }
 
     //choose part type 
     if (strcmp(part_type,"classical") == 0) {
@@ -410,28 +405,35 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
      for ( i = 0; i < *neighbors_count; i++ ) {
         (*recv_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
     }
-    int num_elems_global=0, rank = 0, m = 0;
+    //MPI_Barrier(MPI_COMM_WORLD);
+    int num_elems_global=0;
+    int* rank = (int*) calloc(sizeof(int), (num_procs));
+    int m = 0;
     printf("num_elems: %d\n", num_elems); 
     for (i = 0; i < num_elems_pro; i++) {
     for (j = 0; j < 6; j++ ) {
     num_elems_global=(*lcc)[i][j];
-
+    
     // choose only ghost cell
     if (num_elems_global < num_elems){
     // choose part type
     if (strcmp(part_type,"classical") == 0) {
-    rank= num_elems_global/npro;
+    rank[my_rank]= num_elems_global/npro;
     }else{ 
-    rank=(*epart)[num_elems_global];
+    rank[my_rank]=(*epart)[num_elems_global];
     }
-    if (rank != my_rank ) {
-    //printf("rank%d\n",rank);
-    (*recv_list)[rank][m] = num_elems_global;
-    m=m+1;        
+    if (rank[my_rank] != my_rank ) {
+    //printf("my_rank%d,rank[my_rank]%d,send_out[my_rank]%d,num_elems_global%d\n",
+    //        my_rank,rank[my_rank],(*send_count)[my_rank],num_elems_global);
+    (*send_list)[rank[my_rank]][(*send_count)[rank[my_rank]]] = (*local_global_index)[i];
+    (*send_count)[rank[my_rank]]=(*send_count)[rank[my_rank]]+1;
+
+    (*recv_list)[rank[my_rank]][(*recv_count)[rank[my_rank]]] = num_elems_global;
+    (*recv_count)[rank[my_rank]]=(*recv_count)[rank[my_rank]]+1;        
     }  
     }//choose ghost cell
     }
     }
-    printf("my_rank is%d,recv is :%d\n",my_rank,(*recv_list)[0][0]); 
+    //printf("my_rank is%d,recv is :%d\n",my_rank,(*recv_list)[0][0]); 
     return 0;
     }

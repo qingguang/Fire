@@ -91,15 +91,15 @@ int main(int argc, char *argv[]) {
     int num_elems = nintcf - nintci + 1; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
-    if ( my_rank == 1 ) {
+    if ( my_rank == 3 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
                            num_elems, cgup, epart, npart, objval ); 
     //printf("professor is %d\n", 0);
-    }
+    
     // Implement this function in test_functions.c and call it here
     test_communication( file_in, file_vtk_out, local_global_index, num_elems,
                         neighbors_count, send_count, send_list, recv_count, recv_list );
-
+}
     /********** END INITIALIZATION **********/
     
     /********** START COMPUTATIONAL LOOP **********/
