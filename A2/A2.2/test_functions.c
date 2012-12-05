@@ -110,7 +110,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     neighbors[4] = 37410;
     neighbors[5] = 100233;
     for ( i =0; i<num_procs; i++){
-    for ( j= 0; j < num_elems ;j++) {
+    for ( j= 0; j < *num_elems ;j++) {
           int k = recv_list[i][j];
           (commlist)[k] = 5;
    printf("k is:%d\n",k);

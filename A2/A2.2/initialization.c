@@ -400,8 +400,8 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //printf("processor %d executes sucessfully\n", my_rank);
     //************Comunication Phase*********// 
     *neighbors_count = num_procs;
-    send_count = (int*) calloc(sizeof(int), (num_procs)); 
-    recv_count = (int*) calloc(sizeof(int), (num_procs));        
+    *send_count = (int*) calloc(sizeof(int), (num_procs)); 
+    *recv_count = (int*) calloc(sizeof(int), (num_procs));        
     //if ( my_rank == 0 ) {
     //for (i =0; i<6; i++){
     //printf("my_rank:%d,,lcc(2)[%d] is %d\n",my_rank, i,(*lcc)[0][i]);
@@ -429,7 +429,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     }
     if (rank != my_rank){
     //printf(num_elems_global);
-    (*recv_list)[rank][1]=num_elems_global;
+   // (*recv_list)[rank][1]=num_elems_global;
     m=m+1;        
     }  
     }
