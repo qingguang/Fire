@@ -400,14 +400,8 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     //printf("processor %d executes sucessfully\n", my_rank);
     //************Comunication Phase*********// 
     *neighbors_count = num_procs;
-    send_count = (int*) calloc(sizeof(int), (num_procs)); 
-    recv_count = (int*) calloc(sizeof(int), (num_procs));        
-    //if ( my_rank == 0 ) {
-    //for (i =0; i<6; i++){
-    //printf("my_rank:%d,,lcc(2)[%d] is %d\n",my_rank, i,(*lcc)[0][i]);
-   // }
-    //printf("k_myrank%d",num_elems_pro);
-    //}
+    *send_count = (int*) calloc(sizeof(int), (num_procs)); 
+    *recv_count = (int*) calloc(sizeof(int), (num_procs));        
     *send_list = (int **) calloc(*neighbors_count, sizeof(int*));
     for ( i = 0; i < *neighbors_count; i++ ) {
         (*send_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
@@ -417,23 +411,27 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         (*recv_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
     }
     int num_elems_global=0, rank = 0, m = 0;
-    //printf("recv_list: %d\n", (*recv_list)[0][0]); 
+    printf("num_elems: %d\n", num_elems); 
     for (i = 0; i < num_elems_pro; i++) {
     for (j = 0; j < 6; j++ ) {
     num_elems_global=(*lcc)[i][j];
-     //g=local_global_index[];
+
+    // choose only ghost cell
+    if (num_elems_global < num_elems){
+    // choose part type
     if (strcmp(part_type,"classical") == 0) {
     rank= num_elems_global/npro;
     }else{ 
     rank=(*epart)[num_elems_global];
     }
-    if (rank != my_rank){
-    //printf(num_elems_global);
-    (*recv_list)[rank][1]=num_elems_global;
+    if (rank != my_rank ) {
+    //printf("rank%d\n",rank);
+    (*recv_list)[rank][m] = num_elems_global;
     m=m+1;        
     }  
+    }//choose ghost cell
     }
     }
-  printf("my_rank is%d,m is :%d\n",my_rank,m); 
+    printf("my_rank is%d,recv is :%d\n",my_rank,(*recv_list)[0][0]); 
     return 0;
     }
