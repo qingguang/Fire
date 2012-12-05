@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-    int num_elems = nintcf-nintci+1;; 
+    int num_elems = nintcf - nintci + 1; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
     if ( my_rank == 3 ) {
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
      }
     // Implement this function in test_functions.c and call it here
     //test_communication( file_in, out_prefix, local_global_index, num_elems,
-     //neighbors_count, send_count, send_list, recv_count, recv_list );
+    //                    neighbors_count, send_count, send_list, recv_count, recv_list );
 
     /********** END INITIALIZATION **********/
     
