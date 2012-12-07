@@ -31,17 +31,17 @@ int main(int argc, char *argv[]) {
     double *bs, *be, *bn, *bw, *bl, *bh;
     double *bp;    /// Pole coefficient
     double *su;    /// Source values
-
     double residual_ratio;    /// the ratio between the reference and the current residual
     double *var;    /// the variation vector -> keeps the result in the end
 
     /** Additional vectors required for the computation */
     double *cgup, *oc, *cnorm;
-    //double *cgup_local;
+
     /** Geometry data */
     int points_count;    /// total number of points that define the geometry
     int** points;    /// coordinates of the points that define the cells - size [points_cnt][3]
     int* elems;    /// definition of the cells using their nodes (points) - each cell has 8 points
+    int num_elems_local;/// number of elemens in each processor
 
     /** Mapping between local and remote cell indices */
     int* local_global_index;    /// local to global index mapping
@@ -72,15 +72,14 @@ int main(int argc, char *argv[]) {
     char *file_in = argv[1];
     char *out_prefix = argv[2];
     char *part_type = (argc == 3 ? "classical" : argv[3]);
+
     /********** START INITIALIZATION **********/
     // read-in the input file
-    //printf("processor number is%d \n", my_rank);
-    //if (my_rank==0){
     int init_status = initialization(file_in, part_type, &nintci, &nintcf, &nextci, &nextcf, &lcc,
                                      &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &points_count, &points,
                                      &elems, &var, &cgup, &oc, &cnorm, &local_global_index,
                                      &global_local_index, &neighbors_count, &send_count, &send_list,
-                                     &recv_count, &recv_list, &epart, &npart, &objval);
+                                     &recv_count, &recv_list, &epart, &npart, &objval, &num_elems_local);
 
     if ( init_status != 0 ) {
         fprintf(stderr, "Failed to initialize data!\n");
@@ -88,18 +87,16 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-    int num_elems = nintcf - nintci + 1; 
+    //int num_elems = nintcf - nintci + 1; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
     if ( my_rank == 3 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
-                           num_elems, cgup, epart, npart, objval ); 
-    //printf("professor is %d\n", 0);
-    
-    // Implement this function in test_functions.c and call it here
-    test_communication( file_in, file_vtk_out, local_global_index, num_elems,
-                        neighbors_count, send_count, send_list, recv_count, recv_list );
-}
+                           num_elems_local, cgup, epart, npart, objval ); 
+        test_communication( file_in, file_vtk_out, local_global_index, num_elems_local,
+                            neighbors_count, send_count, send_list, recv_count, recv_list );
+    }
+
     /********** END INITIALIZATION **********/
     
     /********** START COMPUTATIONAL LOOP **********/
