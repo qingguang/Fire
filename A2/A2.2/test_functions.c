@@ -13,7 +13,7 @@
 #include "mpi.h"
 #include "util_write_files.h"
 
-int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems,
+int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems_local,
                       double *cgup, int* epart, int* npart, int* objval) {
     int i;
     int my_rank, num_procs;
@@ -21,6 +21,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     
     int nintci, nintcf;    /// internal cells start and end index
     int nextci, nextcf;
+    int num_elems;
     int **lcc;    /// link cell-to-cell array - stores neighboring information
     /// Boundary coefficients for each volume cell (South, East, North, West, High, Low)
     double *bs, *be, *bn, *bw, *bl, *bh;
@@ -44,9 +45,9 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
         fprintf(stderr, "Failed to initialize data!\n");
         MPI_Abort(MPI_COMM_WORLD, my_rank);
     }
-
+    num_elems = nintcf - nintci + 1;
     double *distr = (double*) calloc(sizeof(double), (nextcf + 1));
-
+   
     for( i = (nintci); i <= (nintcf); i++ ) { 
        (distr)[i] = 0.0;
     }
@@ -56,7 +57,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     if (my_rank == (num_procs-1) ) {
         remain = num_elems % num_procs;
     }
-    for ( i= 0; i < npro+remain+exter ;i++) {
+    for ( i= 0; i < num_elems_local ;i++) {
           int k = local_global_index[i];
           (distr)[k] = cgup[i]; 
     }
@@ -67,7 +68,7 @@ int test_distribution(char *file_in, char *file_vtk_out, int *local_global_index
     return -1;
     }
 
-int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems,
+int test_communication(char *file_in, char *file_vtk_out, int *local_global_index, int num_elems_local,
                        int neighbors_count, int* send_count, int** send_list, int* recv_count,
                        int** recv_list) {
     int i=0, j=0, kp=0, k=0;
@@ -76,6 +77,7 @@ int test_communication(char *file_in, char *file_vtk_out, int *local_global_inde
     /** Simulation parameters parsed from the input datasets */
     int nintci, nintcf;    /// internal cells start and end index
     int nextci, nextcf;
+    int num_elems;
     int **lcc;    /// link cell-to-cell array - stores neighboring information
     // Boundary coefficients for each volume cell (South, East, North, West, High, Low)
     double *bs, *be, *bn, *bw, *bl, *bh;
@@ -96,6 +98,7 @@ int test_communication(char *file_in, char *file_vtk_out, int *local_global_inde
         fprintf(stderr, "Failed to initialize data!\n");
         MPI_Abort(MPI_COMM_WORLD, my_rank);
     }
+    num_elems = nintcf - nintci + 1;
     int npro = num_elems / num_procs;
     int remain = 0;
     if (my_rank == (num_procs-1) ) {
@@ -103,7 +106,7 @@ int test_communication(char *file_in, char *file_vtk_out, int *local_global_inde
     }    
     int exter = nextcf -nextci +1; 
     int *commlist = (int*) calloc(sizeof(int), (nextcf + 1));
-    for ( i= 0; i < npro+remain+exter ;i++) {
+    for ( i= 0; i < num_elems_local ;i++) {
           k = local_global_index[i];
           (commlist)[k] = 15;
     }

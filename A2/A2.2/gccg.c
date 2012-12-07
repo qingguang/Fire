@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
     int points_count;    /// total number of points that define the geometry
     int** points;    /// coordinates of the points that define the cells - size [points_cnt][3]
     int* elems;    /// definition of the cells using their nodes (points) - each cell has 8 points
+    int num_elems_local;/// number of elemens in each processor
 
     /** Mapping between local and remote cell indices */
     int* local_global_index;    /// local to global index mapping
@@ -78,7 +79,7 @@ int main(int argc, char *argv[]) {
                                      &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &points_count, &points,
                                      &elems, &var, &cgup, &oc, &cnorm, &local_global_index,
                                      &global_local_index, &neighbors_count, &send_count, &send_list,
-                                     &recv_count, &recv_list, &epart, &npart, &objval);
+                                     &recv_count, &recv_list, &epart, &npart, &objval, &num_elems_local);
 
     if ( init_status != 0 ) {
         fprintf(stderr, "Failed to initialize data!\n");
@@ -86,13 +87,13 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement this function in test_functions.c and call it here
-    int num_elems = nintcf - nintci + 1; 
+    //int num_elems = nintcf - nintci + 1; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
     if ( my_rank == 3 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
-                           num_elems, cgup, epart, npart, objval ); 
-        test_communication( file_in, file_vtk_out, local_global_index, num_elems,
+                           num_elems_local, cgup, epart, npart, objval ); 
+        test_communication( file_in, file_vtk_out, local_global_index, num_elems_local,
                             neighbors_count, send_count, send_list, recv_count, recv_list );
     }
 

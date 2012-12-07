@@ -16,7 +16,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
                    int*** points, int** elems, double** var, double** cgup, double** oc,
                    double** cnorm, int** local_global_index, int** global_local_index,
                    int* neighbors_count, int** send_count, int*** send_list, int** recv_count,
-                   int*** recv_list, int** epart, int** npart, int** objval) {
+                   int*** recv_list, int** epart, int** npart, int** objval, int* num_elems_local) {
 
     /********** START INITIALIZATION **********/
     int i = 0;
@@ -97,7 +97,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     if (strcmp(part_type,"classical") == 0) {
     //int *k_c = (int*) calloc(sizeof(int), num_procs);
     k[my_rank] = npro + remain;
-    num_elems_pro = npro + remain;
+    (num_elems_pro) = npro + remain;
     int p = 0;
     for ( p = 0; p < num_procs; p++ ) { 
         MPI_Bcast(&k[p],1,MPI_INT,p,MPI_COMM_WORLD);
@@ -259,7 +259,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     }
     MPI_Bcast(&k[p],1,MPI_INT,p,MPI_COMM_WORLD);/// send k[p] to other processors 
     }///finish storing local to global mapping
-    num_elems_pro = k[my_rank];
+    (num_elems_pro) = k[my_rank];
     
     //int *k_sum = (int*) calloc(sizeof(int), num_procs);
     int *local_global_index_sum = (int*) calloc(sizeof(int), num_elems);
@@ -344,15 +344,16 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     MPI_Barrier(MPI_COMM_WORLD);
 
     //************Comunication List*********// 
-    *neighbors_count = num_procs;
+    *num_elems_local = num_elems_pro;
+    *neighbors_count = num_procs-1;
     *send_count = (int*) calloc(sizeof(int), (num_procs)); 
     *recv_count = (int*) calloc(sizeof(int), (num_procs));        
-    *send_list = (int **) calloc(*neighbors_count, sizeof(int*));
-    for ( i = 0; i < *neighbors_count; i++ ) {
+    *send_list = (int **) calloc(*neighbors_count+1, sizeof(int*));
+    for ( i = 0; i < *neighbors_count+1; i++ ) {
         (*send_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
     }
-    *recv_list = (int **) calloc(*neighbors_count, sizeof(int*));
-     for ( i = 0; i < *neighbors_count; i++ ) {
+    *recv_list = (int **) calloc(*neighbors_count+1, sizeof(int*));
+     for ( i = 0; i < *neighbors_count+1; i++ ) {
         (*recv_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
     }
     //MPI_Barrier(MPI_COMM_WORLD);
