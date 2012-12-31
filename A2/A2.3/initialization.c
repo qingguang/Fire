@@ -61,6 +61,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     }
     int local_array_size = npro + remain + exter;
     *local_global_index = (int*) calloc(sizeof(int), npro+remain+exter);
+    *global_local_index = (int*) calloc(sizeof(int), num_elems);
     *bs = (double*) calloc(sizeof(double), (local_array_size));
     *bn = (double*) calloc(sizeof(double), (local_array_size));
     *bw = (double*) calloc(sizeof(double), (local_array_size));
@@ -118,48 +119,22 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
         MPI_Scatterv(bh_a, k, k_sum, MPI_DOUBLE, *bh, k[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatterv(bp_a, k, k_sum, MPI_DOUBLE, *bp, k[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
         MPI_Scatterv(su_a, k, k_sum, MPI_DOUBLE, *su, k[my_rank],MPI_DOUBLE,0, MPI_COMM_WORLD);
-
-    /* create a datatype to describe the subarrays of the global array */
-    /*int sizes[2]    = {num_elems, 6};    
-    int subsizes[2] = {npro, 6};     
-    int starts[2]   = {0,0};                        
-    MPI_Datatype type, subarrtype;
-    MPI_Type_create_subarray(2, sizes, subsizes, starts, MPI_ORDER_C, MPI_INT, &type);
-    MPI_Type_create_resized(type, 0, npro*sizeof(int), &subarrtype);
-    MPI_Type_commit(&subarrtype);*/
     
-    //*lcc = (int**) calloc(sizeof(int*),(npro));
-    //for ( i = 0; i < npro; i++ ) {
-    //     (*lcc)[i] = &(data[6*i]);
-    //(int *) calloc(sizeof(int),(6));
-    //}
-    /*int *globalptr;
-    if (my_rank == 0) globalptr = &(lcc_a[0][0]);
-    // scatter the array to all processors 
-    int sendcounts[num_procs];
-    int displs[num_procs];
-
-    if (my_rank == 0) {
-        for ( i = 0; i < num_procs; i++) sendcounts[i] = 1;
-    //    int disp = 0;
-      //  for (int i=0; i<; i++) {
-        //    for (int j=0; j<; j++) {
-          //      displs[i*procgridsize+j] = disp;
-            //    disp += 1;
-           // }
-           // disp += ((gridsize/procgridsize)-1)*procgridsize;
-       // }
-    }
-    MPI_Scatterv(&(lcc_a[0][0]),sendcounts, k_c_sum, subarrtype, &((*lcc)[0][0]),
-                 npro*6, MPI_INT,
-                 0, MPI_COMM_WORLD);*/
     //initialization of computational array 
      for ( i = 0; i < num_elems_pro; i++ ) {
          (*local_global_index)[i] = my_rank * npro + i;
        for (j = 0;j < 6;j++){
               (*lcc)[i][j]=lcc_b[my_rank*npro+i][j];
               }
-    }
+    } 
+
+    for ( i = 0; i < num_elems_pro; i++ ) {
+          if (i > npro){
+(*global_local_index)[my_rank*npro+i] = (my_rank*npro+i) % npro + npro;
+  } else
+{
+         (*global_local_index)[my_rank*npro+i] = (my_rank*npro+i) % npro ;
+ }   }
 
     for ( i = 0; i <= 10; i++ ) {
         (*oc)[i] = 0.0;
@@ -253,10 +228,14 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
               for (i=0;i<6;i++){
               (*lcc)[k[my_rank]][i]=lcc_b[j][i];
               }
-              k[my_rank] = k[my_rank] + 1;            
+             (*global_local_index)[j] = k[my_rank];
+             k[my_rank] = k[my_rank] + 1;            
+
+    }
+
     }
     }
-    }
+   
     MPI_Bcast(&k[p],1,MPI_INT,p,MPI_COMM_WORLD);/// send k[p] to other processors 
     }///finish storing local to global mapping
     (num_elems_pro) = k[my_rank];
@@ -348,24 +327,34 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     *neighbors_count = num_procs-1;
     *send_count = (int*) calloc(sizeof(int), (num_procs)); 
     *recv_count = (int*) calloc(sizeof(int), (num_procs));        
-    *send_list = (int **) calloc(*neighbors_count+1, sizeof(int*));
+    *send_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
     for ( i = 0; i < *neighbors_count+1; i++ ) {
-        (*send_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
+        (*send_list)[i] = (int *) calloc(sizeof(int),(6*num_elems_pro));
     }
-    *recv_list = (int **) calloc(*neighbors_count+1, sizeof(int*));
+    *recv_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
      for ( i = 0; i < *neighbors_count+1; i++ ) {
-        (*recv_list)[i] = (int *) calloc(6*num_elems_pro, sizeof(int));
+        (*recv_list)[i] = (int *) calloc(sizeof(int),(6*num_elems_pro));
     }
     //MPI_Barrier(MPI_COMM_WORLD);
     int num_elems_global=0;
     int* rank = (int*) calloc(sizeof(int), (num_procs));
     int m = 0;
+    int** count_time_local = (int**) calloc(sizeof(int*),(num_procs));
+    for ( i = 0; i < num_procs; i++ ) {
+        count_time_local[i] = (int *) calloc(sizeof(int),(num_elems));
+    }
 
+    int* count_time = (int*) calloc(sizeof(int),(num_elems));
+    
     for (i = 0; i < num_elems_pro; i++) {
     for (j = 0; j < 6; j++ ) {
-         num_elems_global=(*lcc)[i][j];    
+         num_elems_global=(*lcc)[i][j];
+             
     // choose only ghost cell
     if (num_elems_global < num_elems){
+
+    // record times of this elems occur
+    //count_time[][num_elems_global] = count_time[num_elems_global]+1;
     // choose part type
     if (strcmp(part_type,"classical") == 0) {
         if (num_elems_global >= npro * num_procs){ 
@@ -377,16 +366,25 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
           rank[my_rank]=(*epart)[num_elems_global];
     }///end choosing part type
     if (rank[my_rank] != my_rank ) {
+    count_time_local[rank[my_rank]][i] = count_time_local[rank[my_rank]][i]+1;
+    if (count_time_local[rank[my_rank]][i]==1){
     (*send_list)[rank[my_rank]][(*send_count)[rank[my_rank]]] = (*local_global_index)[i];
     (*send_count)[rank[my_rank]]=(*send_count)[rank[my_rank]]+1;
-
+    }
+    count_time[num_elems_global] = count_time[num_elems_global]+1;
+    if (count_time[num_elems_global] == 1) {
     (*recv_list)[rank[my_rank]][(*recv_count)[rank[my_rank]]] = num_elems_global;
     (*recv_count)[rank[my_rank]]=(*recv_count)[rank[my_rank]]+1;        
     }  
+  }
+    //}// one elements only occur one time  
     }///choose ghost cell
     }///end j for loop
     }///end i for loop    
     free(lcc_b);
+    free(count_time_local);
+    free(count_time);
+    //printf("global_local_index[100] is : %d\n", (*global_local_index)[100]);
     if (my_rank == 0) {
         printf("Initializition finished successfully!\n");
     }

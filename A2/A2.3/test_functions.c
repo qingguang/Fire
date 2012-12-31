@@ -120,6 +120,7 @@ int test_communication(char *file_in, char *file_vtk_out, int *local_global_inde
           (commlist)[k] = 10;
     }
     }
+//    vtk_write_unstr_grid_header(file_in, file_vtk_out, nintci, nintcf, points_count, points, elems);
     vtk_append_integer(file_vtk_out, "commlist", nintci, nintcf, commlist);
   
     // Return an error if not implemented
