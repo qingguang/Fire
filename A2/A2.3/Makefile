@@ -4,15 +4,20 @@
 #                                                                  #
 ####################################################################
 
-CC = icc
-CFLAGS = -g -O0
+CC = mpicc
+CFLAGS = -Wall -g -O3 
 LIBS = -lm
 
-# Make sure you have loaded the papi module before uncommenting these and include papi.h in the sources
-CFLAGS += $(PAPI_INC)
-LIBS += $(PAPI_LIB)
-LIBS += -lpapi
-SRCS = xread.c xwrite.c gccg.c vol2mesh.c
+LIBPOS=libpos.a
+AR = ar
+ARFLAGS = rv
+
+CFLAGS += $(METIS_INC)
+LIBS   += $(METIS_LIB)
+#LIBPOS  += libmetis.a
+LIBS += -lmetis
+SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c test_functions.c
+#SRCS = initialization.c util_read_files.c util_write_files.c
 OBJS =  $(addsuffix .o, $(basename $(SRCS)))
 
 all: gccg 
@@ -20,8 +25,12 @@ all: gccg
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-gccg: $(OBJS) 
+gccg: gccg.c $(LIBPOS) 
+#test_functions.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
+$(LIBPOS) : $(OBJS)
+	$(AR) $(ARFLAGS) $@ $+
+
 clean:
-	rm -rf *.o gccg *.vtk 
+	rm -rf *.o gccg *.out *.vtk $(LIBPOS)

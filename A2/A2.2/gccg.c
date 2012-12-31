@@ -18,7 +18,6 @@
 
 int main(int argc, char *argv[]) {
     int my_rank, num_procs;
-
     const int max_iters = 10000;    /// maximum number of iteration to perform
 
     /** Simulation parameters parsed from the input datasets */
@@ -90,7 +89,7 @@ int main(int argc, char *argv[]) {
     //int num_elems = nintcf - nintci + 1; 
     char file_vtk_out[100];
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
-    if ( my_rank == 3 ) {
+    if ( my_rank == 5 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
                            num_elems_local, cgup, epart, npart, objval ); 
         test_communication( file_in, file_vtk_out, local_global_index, num_elems_local,
