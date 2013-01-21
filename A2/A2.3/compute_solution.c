@@ -82,7 +82,7 @@ int compute_solution(const int max_iters, int nintci, int nintcf, int nextcf, in
 //           MPI_Bcast(&direc1_sum[nc_global],1,MPI_DOUBLE,my_rank,MPI_COMM_WORLD);
         }
 
-MPI_Barrier(MPI_COMM_WORLD);
+//MPI_Barrier(MPI_COMM_WORLD);
 if (iter == 10)      printf("direc1[0] is : %e\n", direc1[0]);
 int index=0;
 for (i=0;i<num_procs;i++){
@@ -152,7 +152,7 @@ for (j=0; j<recv_count[k]; j++)
             
             oc1 = occ / cnorm[1];
             //printf("oc1 is:%e\n",oc1);
-            MPI_Barrier(MPI_COMM_WORLD);
+        //    MPI_Barrier(MPI_COMM_WORLD);
 
            MPI_Allreduce(&oc1, &oc1_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
              //printf("oc1_sum is:%e\n",oc1_sum);
@@ -189,7 +189,7 @@ for (j=0; j<recv_count[k]; j++)
                 if2++;
             }
         }
-        MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Barrier(MPI_COMM_WORLD);
         // compute the new residual
         cnorm[nor] = 0;
         double omega = 0;
