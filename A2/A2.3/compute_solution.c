@@ -26,35 +26,34 @@ int compute_solution(const int max_iters, int nintci, int nintcf, int nextcf, in
     double residual_ratio_sum; 
     MPI_Status status;
     int rank;
-    MPI_Datatype send_type;
-
+   
+   
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    // Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    // get number of processe
+     MPI_Datatype send_type[num_procs], recv_type[num_procs];
     // allocate arrays used in gccg
     int nomax = 3;
-    int blocklengths[1] = {send_count[0]};
-    int displacements[1] = {send_count[0]};
+
 
     /** the reference residual*/
     double resref = 0.0;
-
+    double resref_sum = 0.0;
     /** array storing residuals */
     double *resvec = (double *) calloc(sizeof(double), (num_elems_local));
-    printf("num_elems_local is:%d\n",num_elems_local); 
+    //printf("num_elems_local is:%d\n",num_elems_local); 
     // initialize the reference residual
     for ( nc = 0; nc < num_elems_local; nc++ ) {
         resvec[nc] = su[nc];
         resref = resref + resvec[nc] * resvec[nc];
     }
-//   MPI_Allreduce(&resref, &resref, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    resref = sqrt(resref);
-    if ( resref < 1.0e-15 ) {
+   MPI_Allreduce(&resref, &resref_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    resref_sum = sqrt(resref_sum);
+    if ( resref_sum < 1.0e-15 ) {
         fprintf(stderr, "Residue sum less than 1.e-15 - %lf\n", resref);
         return 0;
     }
-   //printf("myrank is: %d,send_count is: %d:%d:%d, recv_count is: %d:%d:%d\n",
-   // my_rank,send_count[0],send_count[1],send_count[2],recv_count[0],recv_count[1],recv_count[2]);
-   //printf("num_elems%d,global_local_index[num_elems_pro+1]:%d\n",nintcf-nintci,global_local_index[nintcf-nintci]);
+ 
+   
   /** the computation vectors */
     double *direc1 = (double *) calloc(sizeof(double), (nextcf + 1));
     double *direc2 = (double *) calloc(sizeof(double), (nextcf + 1));
@@ -62,76 +61,59 @@ int compute_solution(const int max_iters, int nintci, int nintcf, int nextcf, in
     double *adxor2 = (double *) calloc(sizeof(double), (num_elems_local));
     double *dxor1 = (double *) calloc(sizeof(double), (num_elems_local));
     double *dxor2 = (double *) calloc(sizeof(double), (num_elems_local));
-    int    nc_global = 0;
-    double *direc1_sum = (double *) calloc(sizeof(double), (nextcf + 1));
-    int send_sum = 0;
-    for (i=0; i < num_procs; i++){
-         send_sum =send_sum + send_count[i]; 
-        } 
-   double *direc1_send = (double *) calloc(sizeof(double), (send_sum));
-   printf("blocklengths is:%d\n",blocklengths[0]);
+    double *cnorm_sum = (double *) calloc(sizeof(double), 4);
+    int block_lens[nextcf+1];
+    for (i = 0; i < 4; i++){
+      cnorm_sum[i] = 1;}
+   int nc_global = 0;
+   int  *block_len_send;
+   int *block_len_recv;
 //MPI_Barrier(MPI_COMM_WORLD);
+// Define MPI Datatype
+for (i = 0; i < num_procs; i++)
+{
+       block_len_send=(int* ) calloc(sizeof(int), (send_count[i]));
+       block_len_recv=(int* ) calloc(sizeof(int), (recv_count[i]));
+        if (send_count[i] != 0){
+       for (k = 0 ; k < send_count[i]; k++)   
+          {block_len_send[k] = 1;}
+      MPI_Type_indexed(send_count[i], block_len_send, send_list[i], MPI_DOUBLE, &send_type[i]);
+      MPI_Type_commit(&send_type[i]);
+         free(block_len_send);
+}
+   if (recv_count[i] != 0){
+   for (k=0; k< recv_count[i];k++)   
+           {block_len_recv[k] = 1;}
+      MPI_Type_indexed(recv_count[i], block_len_recv, recv_list[i], MPI_DOUBLE, &recv_type[i]);
+      MPI_Type_commit(&recv_type[i]);
+      free(block_len_recv);
+}
+}
 
-    while ( iter < max_iters ) {
+
+      while ( iter <  max_iters ) {
         /**********  START COMP PHASE 1 **********/
         // update the old values of direc
         for ( nc = 0; nc < num_elems_local; nc++ ) {
-           nc_global= local_global_index[nc];
-          // direc1[nc_global] = direc1[nc_global] + resvec[nc] * cgup[nc]; 
-           direc1[nc] = direc1[nc] + resvec[nc] * cgup[nc];
-           direc1_sum[nc_global]=direc1[nc];
-//           MPI_Bcast(&direc1_sum[nc_global],1,MPI_DOUBLE,my_rank,MPI_COMM_WORLD);
+	   nc_global= local_global_index[nc];   
+           direc1[nc_global] = direc1[nc_global] + resvec[nc] * cgup[nc];
+	   //ddirec1[nc_global] = direc1[nc_global];
         }
 
-//MPI_Barrier(MPI_COMM_WORLD);
-if (iter == 10)      printf("direc1[0] is : %e\n", direc1[0]);
-int index=0;
-for (i=0;i<num_procs;i++){
-for (j=0;j<send_count[i];j++){
-k=global_local_index[send_list[i][j]];
-direc1_send[index]=direc1[k];
-index=index+1;
-}
-}
+   //printf("my_rank%d, iter;%d,resudual_ratio:%e\n",my_rank,iter,*residual_ratio);
+  // communicate the direc1
+        for (i = 0; i < num_procs; i++) {
+          if ( send_count[i] != 0) {
+            MPI_Sendrecv(direc1,1, send_type[i], i, i, 
+			 direc1,1, recv_type[i], i, my_rank, MPI_COMM_WORLD, &status);
+	  }
+        }
 
-if (my_rank==0){
-
-}
-//printf("direc1_send[send_sum-1] is:%e\n",direc1_send[send_sum-1]);
-
-/*
-for (k = 0; k < num_procs; k++){
-if (k != my_rank){
-{
-for (i=0; i < send_count[k]; i++)
-{
-   MPI_Recv(&values[100/np-1], 1, MPI_INT, rnbr, 10, MPI_COMM_WORLD, &status);
-    MPI_Send(&buf, 1, MPI_INT, lnbr, 10, MPI_COMM_WORLD);
- j = global_local_index(send_list[k][i]);
-MPI_Send(&direc1[j],1,MPI_DOUBLE,k,10,MPI_COMM_WORLD);
-MPI_Recv(&buffer[i],1,MPI_DOUBLE,20,MPI_COMM_WORLD,&status);
-}
-for (j=0; j<recv_count[k]; j++)
-{
- MPI_recv(buffer[k][j],)
-}
-}
-}
-}*/
-//printf("send_count is: %d\n",send_count[0]);
-//MPI_Barrier(MPI_COMM_WORLD);
- 
        // compute new guess (approximation) for direc
-       
-        for ( nc = 0; nc < num_elems_local; nc++ ) {
-///lcc_1=lcc[nc][3]
 
-        /*for (i = 0; i < 6; i++) {
-           if (lcc[nc][i] >= nintcf)
-               lcc[nc][i] =   
-         
-        }*/
-          direc2[nc] = bp[nc] * direc1[nc] - bs[nc] * direc1[lcc[nc][0]]
+        for ( nc = 0; nc < num_elems_local; nc++ ) {  
+	      nc_global = local_global_index[nc];   
+            direc2[nc] = bp[nc] * direc1[nc_global] - bs[nc] * direc1[lcc[nc][0]]
                          - bw[nc] * direc1[lcc[nc][3]] - bl[nc] * direc1[lcc[nc][4]]
                          - bn[nc] * direc1[lcc[nc][2]] - be[nc] * direc1[lcc[nc][1]]
                          - bh[nc] * direc1[lcc[nc][5]];
@@ -142,7 +124,8 @@ for (j=0; j<recv_count[k]; j++)
         /********** START COMP PHASE 2 **********/
         // execute normalization steps
         double oc1, oc2, occ;
-        double oc1_sum=0, oc2_sum, occ_sum;
+        double occ_sum;
+            
         if ( nor1 == 1 ) {
             oc1 = 0;
             occ = 0;
@@ -150,16 +133,15 @@ for (j=0; j<recv_count[k]; j++)
             for ( nc = 0; nc < num_elems_local; nc++ ) {
                 occ = occ + adxor1[nc] * direc2[nc];
             }
-            
-            oc1 = occ / cnorm[1];
-            //printf("oc1 is:%e\n",oc1);
-        //    MPI_Barrier(MPI_COMM_WORLD);
-
-          // MPI_Allreduce(&oc1, &oc1_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+           
+           MPI_Allreduce(&occ, &occ_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+           oc1 = occ_sum / cnorm_sum[1];
+           
              //printf("oc1_sum is:%e\n",oc1_sum);
             for ( nc = 0; nc < num_elems_local; nc++ ) {
                 direc2[nc] = direc2[nc] - oc1 * adxor1[nc];
-                direc1[nc] = direc1[nc] - oc1 * dxor1[nc];
+               nc_global=local_global_index[nc]; 
+               direc1[nc_global] = direc1[nc_global] - oc1 * dxor1[nc];
             }
 
             if1++;
@@ -171,26 +153,27 @@ for (j=0; j<recv_count[k]; j++)
                 for ( nc = 0; nc < num_elems_local; nc++ ) {
                     occ = occ + adxor1[nc] * direc2[nc];
                 }
-
-                oc1 = occ / cnorm[1];
-        //        MPI_Allreduce(&oc1, &oc1_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                   MPI_Allreduce(&occ, &occ_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                  oc1 = occ_sum / cnorm_sum[1];
+        //        MPI_Allreducee(&oc1, &oc1_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
                 oc2 = 0;
                 occ = 0;
                 for ( nc = 0; nc <num_elems_local; nc++ ) {
                     occ = occ + adxor2[nc] * direc2[nc];
                 }
-
-                oc2 = occ / cnorm[2];
+                MPI_Allreduce(&occ, &occ_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                 oc2 = occ_sum / cnorm_sum[2];
         ///        MPI_Allreduce(&oc2, &oc2_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
                 for ( nc = 0; nc < num_elems_local; nc++ ) {
                     direc2[nc] = direc2[nc] - oc1 * adxor1[nc] - oc2 * adxor2[nc];
-                    direc1[nc] = direc1[nc] - oc1 * dxor1[nc] - oc2 * dxor2[nc];
+                    nc_global=local_global_index[nc];      
+                    direc1[nc_global] = direc1[nc_global] - oc1 * dxor1[nc] - oc2 * dxor2[nc];
                 }
 
                 if2++;
             }
         }
-//        MPI_Barrier(MPI_COMM_WORLD);
+        //MPI_Barrier(MPI_COMM_WORLD);
         // compute the new residual
         cnorm[nor] = 0;
         double omega = 0;
@@ -199,19 +182,25 @@ for (j=0; j<recv_count[k]; j++)
             cnorm[nor] = cnorm[nor] + direc2[nc] * direc2[nc];
             omega = omega + resvec[nc] * direc2[nc];
         }
-
-        omega = omega / cnorm[nor];
-   //     MPI_Allreduce(&omega, &omega_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&cnorm[nor], &cnorm_sum[nor], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&omega, &omega_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        omega = omega_sum / cnorm_sum[nor];
+  
         double res_updated = 0.0;
+	double res_updated_sum;
         for ( nc = 0; nc < num_elems_local; nc++ ) {
-            var[nc] = var[nc] + omega * direc1[nc];
+            nc_global=local_global_index[nc];
+
+            var[nc] = var[nc] + omega * direc1[nc_global];
             resvec[nc] = resvec[nc] - omega * direc2[nc];
             res_updated = res_updated + resvec[nc] * resvec[nc];
         }
-//        MPI_Allreduce(&res_updated, &res_updated, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-        res_updated = sqrt(res_updated);
-        *residual_ratio = res_updated / resref;
-        //MPI_Allreduce(residual_ratio, &residual_ratio_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+        MPI_Allreduce(&res_updated, &res_updated_sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        res_updated_sum = sqrt(res_updated_sum);
+   
+        *residual_ratio = res_updated_sum / resref_sum;
+ 
  
         // exit on no improvements of residual
         if ( *residual_ratio <= 1.0e-10 ) break;
@@ -224,13 +213,15 @@ for (j=0; j<recv_count[k]; j++)
         } else {
             if ( nor == 1 ) {
                 for ( nc = 0; nc <num_elems_local; nc++ ) {
-                    dxor1[nc] = direc1[nc];
+                    nc_global=local_global_index[nc];
+                    dxor1[nc] = direc1[nc_global];
                     adxor1[nc] = direc2[nc];
                 }
             } else {
                 if ( nor == 2 ) {
                     for ( nc = 0; nc < num_elems_local; nc++ ) {
-                        dxor2[nc] = direc1[nc];
+                  nc_global=local_global_index[nc];                  
+                        dxor2[nc] = direc1[nc_global];
                         adxor2[nc] = direc2[nc];
                     }
                 }
@@ -243,8 +234,10 @@ for (j=0; j<recv_count[k]; j++)
     }
            
     //printf("myrank%d,residual_sum is %e\n",my_rank,residual_ratio_sum);
+if (my_rank == 0){
     printf("rank is: %d, iter is: %d, residual ration is: %e\n",my_rank,iter,*residual_ratio);
     printf("pent iter is: %d,residual ration is: %e\n",546,9.695255e-11);
+}
     free(resvec);
     free(direc1);
     free(direc2);

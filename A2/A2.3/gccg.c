@@ -98,11 +98,8 @@ int main(int argc, char *argv[]) {
     }
 
     /********** END INITIALIZATION **********/
-     int i;
-    /*if (my_rank==0){
-    for (i=0;i< recv_count[0];i++){
-    printf("recv_list[0]:%d\n",recv_list[0][i]); }
-    }*/
+
+
   /********** START COMPUTATIONAL LOOP **********/
     int total_iters = compute_solution(max_iters, nintci, nintcf, nextcf, lcc, bp, bs, bw, bl, bn,
                                         be, bh, cnorm, var, su, cgup, &residual_ratio,

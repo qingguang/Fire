@@ -29,7 +29,8 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     double *bp_a;    /// Pole coefficient
     double *su_a;    /// Source values
     int** lcc_a;    /// link cell-to-cell array - stores neighboring information
-    int** lcc_b;    
+    int** lcc_b;   
+    MPI_Status status; 
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    /// Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    /// get number of processe
 
@@ -127,7 +128,6 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
               (*lcc)[i][j]=lcc_b[my_rank*npro+i][j];
               }
     } 
-
     for ( i = 0; i < num_elems_pro; i++ ) {
           if (i > npro){
 (*global_local_index)[my_rank*npro+i] = (my_rank*npro+i) % npro + npro;
@@ -327,19 +327,20 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     *neighbors_count = num_procs-1;
     *send_count = (int*) calloc(sizeof(int), (num_procs)); 
     *recv_count = (int*) calloc(sizeof(int), (num_procs));        
-    *send_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
+  *send_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
     for ( i = 0; i < *neighbors_count+1; i++ ) {
         (*send_list)[i] = (int *) calloc(sizeof(int),(6*num_elems_pro));
-    }
-    *recv_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
-     for ( i = 0; i < *neighbors_count+1; i++ ) {
-        (*recv_list)[i] = (int *) calloc(sizeof(int),(6*num_elems_pro));
-    }
+    }   
+ //   *recv_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
+   //  for ( i = 0; i < *neighbors_count+1; i++ ) {
+     //   (*recv_list)[i] = (int *) calloc(sizeof(int),();
+   // }
     //MPI_Barrier(MPI_COMM_WORLD);
     int num_elems_global=0;
     int* rank = (int*) calloc(sizeof(int), (num_procs));
     int m = 0;
     int** count_time_local = (int**) calloc(sizeof(int*),(num_procs));
+    //int* sendlist_temp = (int*)calloc(sizeof(int), np*elem_num_local);
     for ( i = 0; i < num_procs; i++ ) {
         count_time_local[i] = (int *) calloc(sizeof(int),(num_elems));
     }
@@ -373,20 +374,84 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     }
     count_time[num_elems_global] = count_time[num_elems_global]+1;
     if (count_time[num_elems_global] == 1) {
-    (*recv_list)[rank[my_rank]][(*recv_count)[rank[my_rank]]] = num_elems_global;
-    (*recv_count)[rank[my_rank]]=(*recv_count)[rank[my_rank]]+1;        
+//    (*recv_list)[rank[my_rank]][(*recv_count)[rank[my_rank]]] = num_elems_global;
+   // (*recv_count)[rank[my_rank]]=(*recv_count)[rank[my_rank]]+1;        
     }  
   }
+//make send_list and receive_list order same
+
     //}// one elements only occur one time  
     }///choose ghost cell
     }///end j for loop
     }///end i for loop    
+ 
+
+
+   // Set the order in send_list and recv_list same
+/*        for (i = 0; i < num_procs; i++) {
+           
+          if (my_rank != i && send_count[i] != 0) { 
+            MPI_Send((*send_list)[i], (*send_count)[i], MPI_INT,i, i, MPI_COMM_WORLD);
+	   // printf("my_rank:%d, send to %d, count %d\n",my_rank,i,(*send_count)[i]);
+          }
+          if (i == my_rank) {        
+            for (j = 0; j < num_procs; j++) {
+              if (j != i && recv_count[j] != 0) {
+                MPI_Recv((*recv_list)[j], (*recv_count)[j], MPI_INT, j, my_rank,
+                         MPI_COMM_WORLD, &status);  // it is wrong here in the buffer address
+             // printf("my_rank:%d, recv from %d, count %d\n",my_rank,j,(*recv_count)[j]); 
+	     }
+            }
+          }
+*/
+for(i = 0; i < num_procs; i++){
+		MPI_Sendrecv(&((*send_count)[i]), 1, MPI_INT, i, i * 1000, &((*recv_count)[i]), 1, MPI_INT, i,
+				my_rank * 1000, MPI_COMM_WORLD, &status);
+	}
+ 
+*recv_list = (int **) calloc( sizeof(int*),(*neighbors_count+1));
+     for ( i = 0; i < *neighbors_count+1; i++ ) {
+        (*recv_list)[i] = (int *) calloc(sizeof(int),((*recv_count)[i]));
+    }
+for (i = 0; i < num_procs; i++) {
+        if ( i != my_rank) {
+//printf("my_rank%d,send to %d,count%d\n,",my_rank,i,(*send_count)[i]);
+//printf("my_rank%d,recv from %d,count%d\n,",my_rank,i,(*recv_count)[i]);
+}
+}
+//printf("before send recv recv_list[1][0] is : %d\n", (*recv_list)[0][0]);
+
+ /*for (i = 0; i < num_procs; i++) {
+
+        if ( send_count[i] != 0) {
+          MPI_Sendrecv((*send_list)[i],(*send_count)[i], MPI_INT, i, 100,
+                      (*recv_list)[i],(*recv_count)[i], MPI_INT, i, 100, MPI_COMM_WORLD, &status);
+
+          }
+        
+}*/
+ for (i = 0; i < num_procs; i++){
+            if (my_rank == i){
+                for (j = 0; j < num_procs; j++){
+                    if (j != my_rank){
+                        MPI_Send((*send_list)[j], (*send_count)[j], MPI_INT, j, 100,
+                                 MPI_COMM_WORLD);
+                    }
+                }
+            }else{
+                MPI_Recv((*recv_list)[i], (*recv_count)[i], MPI_INT, i, 100,
+                         MPI_COMM_WORLD, &status);
+            }
+        }
+        
+//printf("after send recv recv_list[1][0] is : %d\n", (*recv_list)[0][0]);
+
     free(lcc_b);
     free(count_time_local);
     free(count_time);
     //printf("global_local_index[100] is : %d\n", (*global_local_index)[100]);
-    if (my_rank == 0) {
-        printf("Initializition finished successfully!\n");
+    if (my_rank == num_procs-1) {
+        printf("my_rank%d,Initializition finished successfully!\n",my_rank);
     }
     return 0;
     }
