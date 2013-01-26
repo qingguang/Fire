@@ -68,7 +68,6 @@ int compute_solution(const int max_iters, int nintci, int nintcf, int nextcf, in
    int nc_global = 0;
    int  *block_len_send;
    int *block_len_recv;
-//MPI_Barrier(MPI_COMM_WORLD);
 // Define MPI Datatype
 for (i = 0; i < num_procs; i++)
 {

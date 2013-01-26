@@ -10,6 +10,7 @@
 #include <math.h>
 #include "mpi.h"
 #include "metis.h"
+#include "scorep/SCOREP_User.h"
 
 #include "initialization.h"
 #include "compute_solution.h"
@@ -32,7 +33,6 @@ int main(int argc, char *argv[]) {
     double *su;    // Source values
     double residual_ratio;    // the ratio between the reference and the current residual
     double *var;    // the variation vector -> keeps the result in the end
-
     /* Additional vectors required for the computation */
     double *cgup, *oc, *cnorm;
 
@@ -58,11 +58,13 @@ int main(int argc, char *argv[]) {
     int* epart;     // partition vector for the elements of the mesh
     int* npart;     // partition vector for the points (nodes) of the mesh
     int* objval;    /// resulting edgecut of total communication volume (classical distrib->zeros)
-
+    //SCOREP_USER_REGION_DEFINE(OA_Phase);
+    //SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase",SCOREP_USER_REGION_TYPE_COMMON);
     MPI_Init(&argc, &argv);    // Start MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    // Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    // get number of processes
-
+    SCOREP_USER_REGION_DEFINE(OA_Phase);
+    SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase",SCOREP_USER_REGION_TYPE_COMMON);
     if ( argc < 3 ) {
         fprintf(stderr, "Usage: ./gccg <input_file> <output_prefix> <partition_type>\n");
         MPI_Abort(MPI_COMM_WORLD, -1);
@@ -71,14 +73,14 @@ int main(int argc, char *argv[]) {
     char *file_in = argv[1];
     char *out_prefix = argv[2];
     char *part_type = (argc == 3 ? "classical" : argv[3]);
-
     /********** START INITIALIZATION **********/
     // read-in the input file
     int init_status = initialization(file_in, part_type, &nintci, &nintcf, &nextci, &nextcf, &lcc,
                                      &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &points_count, &points,
                                      &elems, &var, &cgup, &oc, &cnorm, &local_global_index,
                                      &global_local_index, &neighbors_count, &send_count, &send_list,
-                                     &recv_count, &recv_list, &epart, &npart, &objval, &num_elems_local);
+                                     &recv_count, &recv_list, &epart, &npart,
+                                     &objval, &num_elems_local);
 
     if ( init_status != 0 ) {
         fprintf(stderr, "Failed to initialize data!\n");
@@ -86,10 +88,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement test function to test the results from initialization
-    char file_vtk_out[100];
-    //char file_vtk_out_com[100];
-    /*sprintf(file_vtk_out, "%s.vtk", out_prefix);
-   // sprintf(file_vtk_out_com, "%scom.vtk", out_prefix);
+    /* char file_vtk_out[100];
+    sprintf(file_vtk_out, "%s.vtk", out_prefix);
+    sprintf(file_vtk_out_com, "%scom.vtk", out_prefix);
     if ( my_rank == 0 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
                            num_elems_local, cgup, epart, npart, objval ); 
@@ -98,20 +99,21 @@ int main(int argc, char *argv[]) {
     }*/
 
     /********** END INITIALIZATION **********/
-
-
-  /********** START COMPUTATIONAL LOOP **********/
+ 
+    /********** START COMPUTATIONAL LOOP **********/
     int total_iters = compute_solution(max_iters, nintci, nintcf, nextcf, lcc, bp, bs, bw, bl, bn,
-                                        be, bh, cnorm, var, su, cgup, &residual_ratio,
+                                       be, bh, cnorm, var, su, cgup, &residual_ratio,
                                        local_global_index, global_local_index, neighbors_count,
-                                       send_count, send_list, recv_count, recv_list,num_elems_local,epart);
+                                       send_count, send_list, recv_count, recv_list,
+                                       num_elems_local, epart);
     /********** END COMPUTATIONAL LOOP **********/
 
     /********** START FINALIZATION **********/
     finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
                  points, elems, var, cgup, su,  local_global_index, num_elems_local);
     /********** END FINALIZATION **********/
-     
+    SCOREP_USER_OA_PHASE_END(OA_Phase);
+
     free(cnorm);
     free(oc);
     free(var);
@@ -124,10 +126,8 @@ int main(int argc, char *argv[]) {
     free(bn);
     free(be);
     free(bs);
-    
-    //}
     MPI_Finalize();    /// Cleanup MPI
-
+//    SCOREP_USER_OA_PHASE_END(OA_Phase);
     return 0;
 }
 

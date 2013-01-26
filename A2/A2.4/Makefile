@@ -4,7 +4,9 @@
 #                                                                  #
 ####################################################################
 
-CC = mpicc
+#CC = mpicc 
+CC = scorep --user mpicc
+#CC= mpicc
 CFLAGS = -Wall -g -O3 
 LIBS = -lm
 
@@ -15,7 +17,7 @@ ARFLAGS = rv
 CFLAGS += $(METIS_INC)
 LIBS   += $(METIS_LIB)
 #LIBPOS  += libmetis.a
-LIBS += -lmetis
+#LIBS += -lmetis
 SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c test_functions.c
 #SRCS = initialization.c util_read_files.c util_write_files.c
 OBJS =  $(addsuffix .o, $(basename $(SRCS)))

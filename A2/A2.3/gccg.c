@@ -78,7 +78,8 @@ int main(int argc, char *argv[]) {
                                      &bs, &be, &bn, &bw, &bl, &bh, &bp, &su, &points_count, &points,
                                      &elems, &var, &cgup, &oc, &cnorm, &local_global_index,
                                      &global_local_index, &neighbors_count, &send_count, &send_list,
-                                     &recv_count, &recv_list, &epart, &npart, &objval, &num_elems_local);
+                                     &recv_count, &recv_list, &epart, &npart,
+                                     &objval, &num_elems_local);
 
     if ( init_status != 0 ) {
         fprintf(stderr, "Failed to initialize data!\n");
@@ -86,10 +87,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Implement test function to test the results from initialization
-    char file_vtk_out[100];
-    //char file_vtk_out_com[100];
-    /*sprintf(file_vtk_out, "%s.vtk", out_prefix);
-   // sprintf(file_vtk_out_com, "%scom.vtk", out_prefix);
+    /* char file_vtk_out[100];
+    sprintf(file_vtk_out, "%s.vtk", out_prefix);
+    sprintf(file_vtk_out_com, "%scom.vtk", out_prefix);
     if ( my_rank == 0 ) {
         test_distribution( file_in, file_vtk_out, local_global_index, 
                            num_elems_local, cgup, epart, npart, objval ); 
@@ -100,18 +100,19 @@ int main(int argc, char *argv[]) {
     /********** END INITIALIZATION **********/
 
 
-  /********** START COMPUTATIONAL LOOP **********/
+    /********** START COMPUTATIONAL LOOP **********/
     int total_iters = compute_solution(max_iters, nintci, nintcf, nextcf, lcc, bp, bs, bw, bl, bn,
-                                        be, bh, cnorm, var, su, cgup, &residual_ratio,
+                                       be, bh, cnorm, var, su, cgup, &residual_ratio,
                                        local_global_index, global_local_index, neighbors_count,
-                                       send_count, send_list, recv_count, recv_list,num_elems_local,epart);
+                                       send_count, send_list, recv_count, recv_list,
+                                       num_elems_local, epart);
     /********** END COMPUTATIONAL LOOP **********/
 
     /********** START FINALIZATION **********/
     finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
                  points, elems, var, cgup, su,  local_global_index, num_elems_local);
     /********** END FINALIZATION **********/
-     
+
     free(cnorm);
     free(oc);
     free(var);
@@ -124,8 +125,7 @@ int main(int argc, char *argv[]) {
     free(bn);
     free(be);
     free(bs);
-    
-    //}
+
     MPI_Finalize();    /// Cleanup MPI
 
     return 0;

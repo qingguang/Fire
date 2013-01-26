@@ -10,6 +10,7 @@
 #include "util_read_files.h"
 #include "initialization.h"
 #include "mpi.h"
+//#include "scorep/SCOREP_User.h"
 int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int* nextci,
                    int* nextcf, int*** lcc, double** bs, double** be, double** bn, double** bw,
                    double** bl, double** bh, double** bp, double** su, int* points_count,
@@ -35,19 +36,19 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    /// get number of processe
 
     // read-in the input file by one processor    
-    if ( my_rank == 0 ) {
+    //if ( my_rank == 0 ) {
          int f_status = read_binary_geo(file_in, &*nintci, &*nintcf, &*nextci, &*nextcf, &lcc_a, &bs_a,
                                         &be_a, &bn_a, &bw_a, &bl_a, &bh_a, &bp_a, &su_a, &*points_count,
                                         &*points, &*elems);
          if ( f_status != 0 ) return f_status;
-    }   
+    //}   
 
     //Send the common information to other processors
-    MPI_Bcast (nintci,1, MPI_INT, 0, MPI_COMM_WORLD);    
-    MPI_Bcast (nintcf,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast (nextci,1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast (nextcf,1, MPI_INT, 0, MPI_COMM_WORLD); 
-    MPI_Bcast (points_count,1, MPI_INT, 0, MPI_COMM_WORLD);
+    //MPI_Bcast (nintci,1, MPI_INT, 0, MPI_COMM_WORLD);    
+    //MPI_Bcast (nintcf,1, MPI_INT, 0, MPI_COMM_WORLD);
+    //MPI_Bcast (nextci,1, MPI_INT, 0, MPI_COMM_WORLD);
+    //MPI_Bcast (nextcf,1, MPI_INT, 0, MPI_COMM_WORLD); 
+    //MPI_Bcast (points_count,1, MPI_INT, 0, MPI_COMM_WORLD);
 
     //local arrays and share parameters
     int num_elems = *nintcf-*nintci+1;
@@ -79,7 +80,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for ( i = 0; i < local_array_size; i++ ) {
          (*lcc)[i] = (int *) calloc(sizeof(int),(6));
     }
-    int *data = (int *)calloc(sizeof(int),(num_elems*6));
+    /*int *data = (int *)calloc(sizeof(int),(num_elems*6));
     lcc_b = (int **)calloc(sizeof(int*),(num_elems));
     for ( i=0; i<num_elems; i++){
         lcc_b[i] = &(data[6*i]);
@@ -94,7 +95,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     
     MPI_Bcast (&(lcc_b[0][0]),num_elems*6, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);    
-
+   */
     //choose part type 
     if (strcmp(part_type,"classical") == 0) {
     //int *k_c = (int*) calloc(sizeof(int), num_procs);
@@ -125,7 +126,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
      for ( i = 0; i < num_elems_pro; i++ ) {
          (*local_global_index)[i] = my_rank * npro + i;
        for (j = 0;j < 6;j++){
-              (*lcc)[i][j]=lcc_b[my_rank*npro+i][j];
+              (*lcc)[i][j]=lcc_a[my_rank*npro+i][j];
               }
     } 
     for ( i = 0; i < num_elems_pro; i++ ) {
@@ -163,9 +164,11 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     
     //part type is not classics but metis   
     }else{
+      //SCOREP_USER_REGION_DEFINE(OA_Phase);
+      //SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase", SCOREP_USER_REGION_TYPE_COMMON);
          *epart = (int*) calloc(sizeof(int), num_elems);
          *npart = (int*) calloc(sizeof(int), num_elems*8);
-    if ( my_rank == 0 ) {
+    //if ( my_rank == 0 ) {
 
          //parametes and array for metis partition libary
          idx_t ne = (idx_t) num_elems;
@@ -208,13 +211,13 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     for ( i = 0; i < node_num; i++ ) {
           (*npart)[i] = (int) npart_METIS[i]; 
     }
-    }//single processor 
-    
+    //}  // single processor 
+    //SCOREP_USER_OA_PHASE_END(OA_Phase);
     //Full METIS arrary should be avaible for every processor
-    MPI_Bcast(*epart,num_elems,MPI_INT,0,MPI_COMM_WORLD);
-    MPI_Bcast(*npart,num_elems*8,MPI_INT,0,MPI_COMM_WORLD);
+    //MPI_Bcast(*epart,num_elems,MPI_INT,0,MPI_COMM_WORLD);
+    //MPI_Bcast(*npart,num_elems*8,MPI_INT,0,MPI_COMM_WORLD);
     //ditribute data according to METIS Partition
-    MPI_Barrier(MPI_COMM_WORLD);
+    //MPI_Barrier(MPI_COMM_WORLD);
     int p = 0;
     //int *k = (int*) calloc(sizeof(int), num_procs);
 
@@ -226,7 +229,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
          if ( (*epart)[j] == my_rank ) {
               (*local_global_index)[k[my_rank]] = j ;
               for (i=0;i<6;i++){
-              (*lcc)[k[my_rank]][i]=lcc_b[j][i];
+              (*lcc)[k[my_rank]][i]=lcc_a[j][i];
               }
              (*global_local_index)[j] = k[my_rank];
              k[my_rank] = k[my_rank] + 1;            
@@ -320,7 +323,7 @@ int initialization(char* file_in, char* part_type, int* nintci, int* nintcf, int
     
     }//finish choose part type section and all local array are stored
 
-    MPI_Barrier(MPI_COMM_WORLD);
+ //   MPI_Barrier(MPI_COMM_WORLD);
 
     //************Comunication List*********// 
     *num_elems_local = num_elems_pro;
@@ -446,7 +449,7 @@ for (i = 0; i < num_procs; i++) {
         
 //printf("after send recv recv_list[1][0] is : %d\n", (*recv_list)[0][0]);
 
-    free(lcc_b);
+    free(lcc_a);
     free(count_time_local);
     free(count_time);
     //printf("global_local_index[100] is : %d\n", (*global_local_index)[100]);
