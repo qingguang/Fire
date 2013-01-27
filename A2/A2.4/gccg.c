@@ -36,7 +36,6 @@ int main(int argc, char *argv[]) {
     double *var;    // the variation vector -> keeps the result in the end
     /* Additional vectors required for the computation */
     double *cgup, *oc, *cnorm;
-
     /* Geometry data */
     int points_count;    // total number of points that define the geometry
     int** points;    // coordinates of the points that define the cells - size [points_cnt][3]
@@ -59,16 +58,14 @@ int main(int argc, char *argv[]) {
     int* epart;     // partition vector for the elements of the mesh
     int* npart;     // partition vector for the points (nodes) of the mesh
     int* objval;    /// resulting edgecut of total communication volume (classical distrib->zeros)
-    //SCOREP_USER_REGION_DEFINE(OA_Phase);
-    //SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase",SCOREP_USER_REGION_TYPE_COMMON);
+    SCOREP_USER_REGION_DEFINE(OA_Phase);
+    SCOREP_USER_OA_PHASE_BEGIN(OA_Phase, "OA_Phase", SCOREP_USER_REGION_TYPE_COMMON);
     MPI_Init(&argc, &argv);    // Start MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    // Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    // get number of processes
+    // SCOREP_USER_REGION_DEFINE(OA_Phase);
+    // SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase",SCOREP_USER_REGION_TYPE_COMMON);
 
-    SCOREP_USER_REGION_DEFINE(OA_Phase);
-    SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase",SCOREP_USER_REGION_TYPE_COMMON);
-    //SCOREP_METRIC_PAPI="PAPI_TOT_CYC,PAPI_FP_INS";
-    //SCOREP_METRIC_RUSAGE="all"; 
     if ( argc < 3 ) {
         fprintf(stderr, "Usage: ./gccg <input_file> <output_prefix> <partition_type>\n");
         MPI_Abort(MPI_COMM_WORLD, -1);
@@ -96,14 +93,13 @@ int main(int argc, char *argv[]) {
     sprintf(file_vtk_out, "%s.vtk", out_prefix);
     sprintf(file_vtk_out_com, "%scom.vtk", out_prefix);
     if ( my_rank == 0 ) {
-        test_distribution( file_in, file_vtk_out, local_global_index, 
+        test_distribution( file_in, file_vtk_out, local_global_index,
                            num_elems_local, cgup, epart, npart, objval ); 
         test_communication( file_in, file_vtk_out, local_global_index, num_elems_local,
                             neighbors_count, send_count, send_list, recv_count, recv_list );
     }*/
-
     /********** END INITIALIZATION **********/
- 
+
     /********** START COMPUTATIONAL LOOP **********/
     int total_iters = compute_solution(max_iters, nintci, nintcf, nextcf, lcc, bp, bs, bw, bl, bn,
                                        be, bh, cnorm, var, su, cgup, &residual_ratio,
@@ -116,7 +112,7 @@ int main(int argc, char *argv[]) {
     finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
                  points, elems, var, cgup, su,  local_global_index, num_elems_local);
     /********** END FINALIZATION **********/
-    //SCOREP_USER_OA_PHASE_END(OA_Phase);
+    // SCOREP_USER_OA_PHASE_END(OA_Phase);
 
     free(cnorm);
     free(oc);
