@@ -135,7 +135,6 @@ int read_binary_geo(char *file_name, int *NINTCI, int *NINTCF, int *NEXTCI, int 
     for ( i = (*NINTCI); i < (*NINTCF + 1) * 8; i++ ) {
         fread(&((*elems)[i]), sizeof(int), 1, fp);
     }
-    //printf("LCC%d\n",(*LCC)[0][0]);
     fread(points_count, sizeof(int), 1, fp);
 
     // allocate points vec
