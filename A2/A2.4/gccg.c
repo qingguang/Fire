@@ -11,6 +11,7 @@
 #include "mpi.h"
 #include "metis.h"
 #include "scorep/SCOREP_User.h"
+#include "papi.h"
 
 #include "initialization.h"
 #include "compute_solution.h"
@@ -63,8 +64,11 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);    // Start MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    // Get current process id
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);    // get number of processes
+
     SCOREP_USER_REGION_DEFINE(OA_Phase);
     SCOREP_USER_OA_PHASE_BEGIN(OA_Phase,"OA_Phase",SCOREP_USER_REGION_TYPE_COMMON);
+    //SCOREP_METRIC_PAPI="PAPI_TOT_CYC,PAPI_FP_INS";
+    //SCOREP_METRIC_RUSAGE="all"; 
     if ( argc < 3 ) {
         fprintf(stderr, "Usage: ./gccg <input_file> <output_prefix> <partition_type>\n");
         MPI_Abort(MPI_COMM_WORLD, -1);
@@ -112,7 +116,7 @@ int main(int argc, char *argv[]) {
     finalization(file_in, out_prefix, total_iters, residual_ratio, nintci, nintcf, points_count,
                  points, elems, var, cgup, su,  local_global_index, num_elems_local);
     /********** END FINALIZATION **********/
-    SCOREP_USER_OA_PHASE_END(OA_Phase);
+    //SCOREP_USER_OA_PHASE_END(OA_Phase);
 
     free(cnorm);
     free(oc);
@@ -127,7 +131,7 @@ int main(int argc, char *argv[]) {
     free(be);
     free(bs);
     MPI_Finalize();    /// Cleanup MPI
-//    SCOREP_USER_OA_PHASE_END(OA_Phase);
+    SCOREP_USER_OA_PHASE_END(OA_Phase);
     return 0;
 }
 

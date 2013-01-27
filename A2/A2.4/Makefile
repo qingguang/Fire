@@ -16,6 +16,9 @@ ARFLAGS = rv
 
 CFLAGS += $(METIS_INC)
 LIBS   += $(METIS_LIB)
+CFLAGS += $(PAPI_INC)
+LIBS += $(PAPI_LIB)
+#LIBS += -lpapi
 #LIBPOS  += libmetis.a
 #LIBS += -lmetis
 SRCS = initialization.c compute_solution.c finalization.c util_read_files.c util_write_files.c test_functions.c
